@@ -1,4 +1,4 @@
-package pacman.entries.pacman;
+package pacman.entries.pacman.wiba;
 
 import pacman.controllers.Controller;
 import pacman.game.Constants.MOVE;
@@ -9,7 +9,7 @@ import pacman.game.Game;
  * fill in the getAction() method. Any additional classes you write should either
  * be placed in this package or sub-packages (e.g., game.entries.pacman.mypackage).
  */
-public class MyPacMan extends Controller<MOVE> {
+public class PacManBT extends Controller<MOVE> {
     private MOVE myMove = MOVE.NEUTRAL;
 
     public MOVE getMove(Game game, long timeDue) {
