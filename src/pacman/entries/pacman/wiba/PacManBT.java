@@ -3,8 +3,12 @@ package pacman.entries.pacman.wiba;
 import pacman.controllers.Controller;
 import pacman.entries.pacman.wiba.bt.Blackboard;
 import pacman.entries.pacman.wiba.bt.TreeNode;
+import pacman.entries.pacman.wiba.bt.composite.Selector;
 import pacman.entries.pacman.wiba.bt.composite.Sequence;
+import pacman.entries.pacman.wiba.bt.leaf.CheckVariableLeaf;
+import pacman.entries.pacman.wiba.bt.leaf.MoveAwayFromGhosts;
 import pacman.entries.pacman.wiba.bt.leaf.SetVariableLeaf;
+import pacman.entries.pacman.wiba.bt.utils.IControllerActions;
 import pacman.game.Constants;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
@@ -14,7 +18,7 @@ import pacman.game.Game;
  * fill in the getAction() method. Any additional classes you write should either
  * be placed in this package or sub-packages (e.g., game.entries.pacman.mypackage).
  */
-public class PacManBT extends Controller<MOVE> {
+public class PacManBT extends Controller<MOVE> implements IControllerActions {
     private MOVE myMove = MOVE.NEUTRAL;
 
     private TreeNode root;
@@ -24,14 +28,33 @@ public class PacManBT extends Controller<MOVE> {
 
     public PacManBT() {
         blackboard = new Blackboard();
+
         // Build the Behavior Tree
-        Sequence sequence = new Sequence();
-        root = sequence;
+        Sequence rootSequence = new Sequence();
+        root = rootSequence;
 
+        // 1) initialize common variables
         SetVariableLeaf setClosestEnemyDistance = new SetVariableLeaf(blackboard, "enemy.distance", () -> ""+getDangerDistance());
+        Selector gatherEscapeSelector = new Selector();
+
+        rootSequence.addChild(setClosestEnemyDistance);
+        rootSequence.addChild(gatherEscapeSelector);
+
+        // 2 a) build gather sequence
+        Sequence gatherSequence = new Sequence();
+        CheckVariableLeaf canGather = new CheckVariableLeaf(blackboard, "enemy.distance", (dist) -> Integer.parseInt(dist) > 20);
+
+        gatherSequence.addChild(canGather);
+
+        // 2 b) construct escape sequence
+        Sequence escapeSequence = new Sequence();
+        MoveAwayFromGhosts moveAway = new MoveAwayFromGhosts(this);
+
+        escapeSequence.addChild(moveAway);
 
 
-        sequence.addChild(setClosestEnemyDistance);
+        //gatherEscapeSelector.addChild(gatherSequence);
+        gatherEscapeSelector.addChild(escapeSequence);
 
     }
 
@@ -59,5 +82,15 @@ public class PacManBT extends Controller<MOVE> {
         }
 
         return minDistance;
+    }
+
+    @Override
+    public void setNextMove(MOVE nextMove) {
+        this.myMove = nextMove;
+    }
+
+    @Override
+    public Game getGameState() {
+        return currentGameState;
     }
 }
