@@ -5,8 +5,9 @@ import pacman.entries.pacman.wiba.bt.TreeNode;
 
 public class Sequence extends CompositeNode {
 
-    public Sequence() {
+    public Sequence(String name) {
         super();
+        this.name = name + " Sequence";
     }
 
     @Override

@@ -31,18 +31,18 @@ public class PacManBT extends Controller<MOVE> implements IControllerActions {
         blackboard = new Blackboard();
 
         // Build the Behavior Tree
-        Sequence rootSequence = new Sequence();
+        Sequence rootSequence = new Sequence("Root");
         root = rootSequence;
 
         // 1) initialize common variables
         SetVariableLeaf setClosestEnemyDistance = new SetVariableLeaf(blackboard, "enemy.distance", () -> ""+getDangerDistance());
-        Selector gatherEscapeSelector = new Selector();
+        Selector gatherEscapeSelector = new Selector("Gather-Escape");
 
         rootSequence.addChild(setClosestEnemyDistance);
         rootSequence.addChild(gatherEscapeSelector);
 
         // 2 a) build gather sequence
-        Sequence gatherSequence = new Sequence();
+        Sequence gatherSequence = new Sequence("Gather");
         CheckVariableLeaf canGatherCheck = new CheckVariableLeaf(blackboard, "enemy.distance", (dist) -> Integer.parseInt(dist) > 20);
         CollectClosestPillAction collectClosestPillAction = new CollectClosestPillAction(this);
 
@@ -50,7 +50,7 @@ public class PacManBT extends Controller<MOVE> implements IControllerActions {
         gatherSequence.addChild(collectClosestPillAction);
 
         // 2 b) construct escape sequence
-        Sequence escapeSequence = new Sequence();
+        Sequence escapeSequence = new Sequence("Escape");
         FleeAction fleeAction = new FleeAction(this);
 
         escapeSequence.addChild(fleeAction);
@@ -64,9 +64,9 @@ public class PacManBT extends Controller<MOVE> implements IControllerActions {
     public MOVE getMove(Game game, long timeDue) {
         currentGameState = game;
 
-        System.out.println("Searching the tree...");
+        //System.out.println("Searching the tree...");
         root.tick();
-        System.out.println("Move found! " + myMove);
+        //System.out.println("Move found! " + myMove);
 
         return myMove;
     }

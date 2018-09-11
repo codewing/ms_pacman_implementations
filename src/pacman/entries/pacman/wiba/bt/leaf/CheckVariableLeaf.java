@@ -14,6 +14,8 @@ public class CheckVariableLeaf extends TreeNode {
     private Blackboard blackboard;
 
     public CheckVariableLeaf(Blackboard blackboard, String variable, Predicate<String> condition) {
+        this.name = "Check Variable: " + variable;
+
         this.blackboard = blackboard;
         this.variable = variable;
         this.condition = condition;

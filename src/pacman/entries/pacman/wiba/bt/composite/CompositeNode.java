@@ -14,8 +14,4 @@ public abstract class CompositeNode extends TreeNode {
     public void addChild(TreeNode child) {
         children.add(child);
     }
-
-    public void addChild(TreeNode child, int position) {
-        children.add(position, child);
-    }
 }

@@ -13,6 +13,8 @@ public class SetVariableLeaf extends TreeNode {
     private Blackboard blackboard;
 
     public SetVariableLeaf(Blackboard blackboard, String variable, Supplier<String> value) {
+        this.name = "Set Variable:" + variable;
+
         this.blackboard = blackboard;
         this.variable = variable;
         this.value = value;

@@ -5,8 +5,9 @@ import pacman.entries.pacman.wiba.bt.TreeNode;
 
 public class Selector extends CompositeNode {
 
-    public Selector() {
+    public Selector(String name) {
         super();
+        this.name = name + " Selector";
     }
 
     @Override

@@ -16,6 +16,8 @@ public class FleeAction extends ActionNode {
 
     public FleeAction(IControllerActions controllerActions) {
         super(controllerActions);
+        this.name = "Flee";
+
         this.random = new Random();
     }
 
@@ -42,6 +44,7 @@ public class FleeAction extends ActionNode {
         }
 
         ArrayList<Constants.MOVE> goodMoves = new ArrayList<>(Arrays.asList(Constants.MOVE.values()));
+        goodMoves.remove(Constants.MOVE.NEUTRAL);
         for(Pair<Constants.MOVE, Integer> enemyDirections : enemyDistances) {
             goodMoves.remove(enemyDirections.getFirst());
         }

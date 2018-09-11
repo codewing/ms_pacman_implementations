@@ -16,6 +16,8 @@ public class CollectClosestPillAction extends ActionNode {
 
     public CollectClosestPillAction(IControllerActions controllerActions) {
         super(controllerActions);
+        this.name = "Collect closest pill";
+
         this.random = new Random();
     }
 
