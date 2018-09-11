@@ -6,7 +6,8 @@ import pacman.entries.pacman.wiba.bt.TreeNode;
 import pacman.entries.pacman.wiba.bt.composite.Selector;
 import pacman.entries.pacman.wiba.bt.composite.Sequence;
 import pacman.entries.pacman.wiba.bt.leaf.CheckVariableLeaf;
-import pacman.entries.pacman.wiba.bt.leaf.MoveAwayFromGhosts;
+import pacman.entries.pacman.wiba.bt.leaf.CollectClosestPillAction;
+import pacman.entries.pacman.wiba.bt.leaf.FleeAction;
 import pacman.entries.pacman.wiba.bt.leaf.SetVariableLeaf;
 import pacman.entries.pacman.wiba.bt.utils.IControllerActions;
 import pacman.game.Constants;
@@ -42,18 +43,20 @@ public class PacManBT extends Controller<MOVE> implements IControllerActions {
 
         // 2 a) build gather sequence
         Sequence gatherSequence = new Sequence();
-        CheckVariableLeaf canGather = new CheckVariableLeaf(blackboard, "enemy.distance", (dist) -> Integer.parseInt(dist) > 20);
+        CheckVariableLeaf canGatherCheck = new CheckVariableLeaf(blackboard, "enemy.distance", (dist) -> Integer.parseInt(dist) > 20);
+        CollectClosestPillAction collectClosestPillAction = new CollectClosestPillAction(this);
 
-        gatherSequence.addChild(canGather);
+        gatherSequence.addChild(canGatherCheck);
+        gatherSequence.addChild(collectClosestPillAction);
 
         // 2 b) construct escape sequence
         Sequence escapeSequence = new Sequence();
-        MoveAwayFromGhosts moveAway = new MoveAwayFromGhosts(this);
+        FleeAction fleeAction = new FleeAction(this);
 
-        escapeSequence.addChild(moveAway);
+        escapeSequence.addChild(fleeAction);
 
 
-        //gatherEscapeSelector.addChild(gatherSequence);
+        gatherEscapeSelector.addChild(gatherSequence);
         gatherEscapeSelector.addChild(escapeSequence);
 
     }
