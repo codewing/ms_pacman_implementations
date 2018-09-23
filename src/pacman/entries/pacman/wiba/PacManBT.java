@@ -43,7 +43,7 @@ public class PacManBT extends Controller<MOVE> implements IControllerActions {
 
         // 2 a) build gather sequence
         Sequence gatherSequence = new Sequence("Gather");
-        CheckVariableLeaf canGatherCheck = new CheckVariableLeaf(blackboard, "enemy.distance", (dist) -> Integer.parseInt(dist) > 40);
+        CheckVariableLeaf canGatherCheck = new CheckVariableLeaf(blackboard, "enemy.distance", (dist) -> Integer.parseInt(dist) > 30);
         CollectClosestPillAction collectClosestPillAction = new CollectClosestPillAction(blackboard, this);
 
         gatherSequence.addChild(canGatherCheck);

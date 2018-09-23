@@ -38,7 +38,7 @@ public class FleeAction extends ActionNode {
 
                 int distance = currentGameState.getShortestPathDistance(pacmanPosition, currentGameState.getGhostCurrentNodeIndex(ghost));
 
-                if(distance < 40) {
+                if(distance < 30) {
                     Constants.MOVE direction = currentGameState.getNextMoveTowardsTarget(pacmanPosition, currentGameState.getGhostCurrentNodeIndex(ghost), Constants.DM.PATH);
                     enemyDistances.add(new Pair<>(direction, distance));
                 }
