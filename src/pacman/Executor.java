@@ -66,7 +66,7 @@ public class Executor
 		//exec.runGameTimed(new NearestPillPacMan(),new AggressiveGhosts(),visual);
 		//exec.runGameTimed(new MyPacMan(),new StarterGhosts(), visual);
 		//exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(),visual);
-		exec.runGameTimed(new PacManBT(), new StarterGhosts(), visual);
+		exec.runGameTimed(new PacManBT(), new RandomGhosts(), visual);
 		
 		/*
 		//run the game in asynchronous mode but advance as soon as both controllers are ready  - this is the mode of the competition.

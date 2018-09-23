@@ -6,16 +6,14 @@ import pacman.entries.pacman.wiba.bt.TreeNode;
 
 import java.util.function.Supplier;
 
-public class SetVariableLeaf extends TreeNode {
+public class SetVariableLeaf extends ActionNode {
 
     private String variable;
     private Supplier<String> value;
-    private Blackboard blackboard;
 
     public SetVariableLeaf(Blackboard blackboard, String variable, Supplier<String> value) {
-        this.name = "Set Variable:" + variable;
+        super("Set Variable:" + variable, blackboard, null);
 
-        this.blackboard = blackboard;
         this.variable = variable;
         this.value = value;
     }

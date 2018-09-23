@@ -4,6 +4,10 @@ public abstract class TreeNode {
     protected String name;
     protected Status currentStatus = Status.INVALID;
 
+    public TreeNode(String name) {
+        this.name = name;
+    }
+
     public Status tick() {
 
         if(currentStatus == Status.INVALID) {

@@ -6,8 +6,7 @@ import pacman.entries.pacman.wiba.bt.TreeNode;
 public class Selector extends CompositeNode {
 
     public Selector(String name) {
-        super();
-        this.name = name + " Selector";
+        super(name + " Selector");
     }
 
     @Override
@@ -19,6 +18,7 @@ public class Selector extends CompositeNode {
         // find the first child which is not a failure.
         for (TreeNode child : children) {
             Status childStatus = child.tick();
+            System.out.println("Called " + name + " result: " + childStatus);
 
             if(childStatus != Status.FAILURE) {
                 return childStatus;

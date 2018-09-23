@@ -5,7 +5,6 @@ import pacman.entries.pacman.wiba.bt.Status;
 import pacman.entries.pacman.wiba.bt.TreeNode;
 
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 public class CheckVariableLeaf extends TreeNode {
 
@@ -14,7 +13,7 @@ public class CheckVariableLeaf extends TreeNode {
     private Blackboard blackboard;
 
     public CheckVariableLeaf(Blackboard blackboard, String variable, Predicate<String> condition) {
-        this.name = "Check Variable: " + variable;
+        super("Check Variable: " + variable);
 
         this.blackboard = blackboard;
         this.variable = variable;
@@ -26,10 +25,15 @@ public class CheckVariableLeaf extends TreeNode {
 
     @Override
     protected Status update() {
+        Status ret;
+
         if (condition.test(blackboard.get(variable))) {
-            return Status.SUCCESS;
+            ret = Status.SUCCESS;
+        } else {
+            ret = Status.FAILURE;
         }
-        return Status.FAILURE;
+        System.out.println("Check variable: " + ret);
+        return ret;
     }
 
     @Override

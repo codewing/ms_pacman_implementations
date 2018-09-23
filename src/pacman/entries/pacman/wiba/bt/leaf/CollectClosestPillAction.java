@@ -1,5 +1,6 @@
 package pacman.entries.pacman.wiba.bt.leaf;
 
+import pacman.entries.pacman.wiba.bt.Blackboard;
 import pacman.entries.pacman.wiba.bt.Status;
 import pacman.entries.pacman.wiba.bt.utils.IControllerActions;
 import pacman.entries.pacman.wiba.bt.utils.Pair;
@@ -14,9 +15,8 @@ public class CollectClosestPillAction extends ActionNode {
 
     private Random random;
 
-    public CollectClosestPillAction(IControllerActions controllerActions) {
-        super(controllerActions);
-        this.name = "Collect closest pill";
+    public CollectClosestPillAction(Blackboard blackboard, IControllerActions controllerActions) {
+        super("Collect closest pill action", blackboard, controllerActions);
 
         this.random = new Random();
     }

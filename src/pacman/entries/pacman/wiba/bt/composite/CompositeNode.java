@@ -1,5 +1,6 @@
 package pacman.entries.pacman.wiba.bt.composite;
 
+import pacman.entries.pacman.wiba.bt.Blackboard;
 import pacman.entries.pacman.wiba.bt.TreeNode;
 
 import java.util.ArrayList;
@@ -7,7 +8,8 @@ import java.util.ArrayList;
 public abstract class CompositeNode extends TreeNode {
     protected ArrayList<TreeNode> children;
 
-    protected CompositeNode() {
+    protected CompositeNode(String name) {
+        super(name);
         children = new ArrayList<>();
     }
 
