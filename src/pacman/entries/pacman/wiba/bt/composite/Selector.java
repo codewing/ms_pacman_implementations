@@ -18,7 +18,6 @@ public class Selector extends CompositeNode {
         // find the first child which is not a failure.
         for (TreeNode child : children) {
             Status childStatus = child.tick();
-            System.out.println("Called " + name + " result: " + childStatus);
 
             if(childStatus != Status.FAILURE) {
                 return childStatus;

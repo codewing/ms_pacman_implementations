@@ -19,7 +19,6 @@ public class Sequence extends CompositeNode {
         // iterate over every node
         for(TreeNode child : children) {
             Status childStatus = child.tick();
-            System.out.println("Called " + name + " result: " + childStatus);
 
             if(childStatus != Status.SUCCESS) {
                 return childStatus;

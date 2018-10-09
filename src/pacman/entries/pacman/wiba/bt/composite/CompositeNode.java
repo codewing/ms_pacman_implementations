@@ -1,6 +1,5 @@
 package pacman.entries.pacman.wiba.bt.composite;
 
-import pacman.entries.pacman.wiba.bt.Blackboard;
 import pacman.entries.pacman.wiba.bt.TreeNode;
 
 import java.util.ArrayList;

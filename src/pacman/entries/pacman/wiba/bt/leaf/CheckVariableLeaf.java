@@ -32,7 +32,6 @@ public class CheckVariableLeaf extends TreeNode {
         } else {
             ret = Status.FAILURE;
         }
-        System.out.println("Check variable: " + ret);
         return ret;
     }
 
