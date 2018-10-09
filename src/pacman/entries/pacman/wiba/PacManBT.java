@@ -34,7 +34,7 @@ public class PacManBT extends Controller<MOVE> implements IControllerActions {
         Sequence rootSequence = new Sequence("Root");
         root = rootSequence;
 
-        // 1) initialize common variables
+        // 1) update common variables
         SetVariableLeaf setClosestEnemyDistance = new SetVariableLeaf(blackboard, "enemy.distance", () -> ""+getDangerDistance());
         Selector gatherEscapeSelector = new Selector("Gather-Escape");
 
@@ -49,7 +49,7 @@ public class PacManBT extends Controller<MOVE> implements IControllerActions {
         gatherSequence.addChild(canGatherCheck);
         gatherSequence.addChild(collectClosestPillAction);
 
-        // 2 b) construct escape sequence
+        // 2 b) build escape sequence
         Sequence escapeSequence = new Sequence("Escape");
         FleeAction fleeAction = new FleeAction(blackboard, this);
 
@@ -64,16 +64,14 @@ public class PacManBT extends Controller<MOVE> implements IControllerActions {
     public MOVE getMove(Game game, long timeDue) {
         currentGameState = game;
 
-        //System.out.println("Searching the tree...");
         root.tick();
-        //System.out.println("Move found! " + myMove);
 
         return myMove;
     }
 
 
 
-    public int getDangerDistance() {
+    private int getDangerDistance() {
 
         int minDistance = Integer.MAX_VALUE;
         int current = currentGameState.getPacmanCurrentNodeIndex();
