@@ -19,7 +19,7 @@ import pacman.game.Game;
  * fill in the getAction() method. Any additional classes you write should either
  * be placed in this package or sub-packages (e.g., game.entries.pacman.mypackage).
  */
-public class PacManBT extends Controller<MOVE> implements IControllerActions {
+public class WibaPacManBT extends Controller<MOVE> implements IControllerActions {
     private MOVE myMove = MOVE.NEUTRAL;
 
     private TreeNode root;
@@ -27,7 +27,7 @@ public class PacManBT extends Controller<MOVE> implements IControllerActions {
 
     private Game currentGameState;
 
-    public PacManBT() {
+    public WibaPacManBT() {
         blackboard = new Blackboard();
 
         // Build the Behavior Tree

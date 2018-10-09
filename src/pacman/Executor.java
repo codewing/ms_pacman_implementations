@@ -11,19 +11,9 @@ import java.util.EnumMap;
 import java.util.Random;
 import pacman.controllers.Controller;
 import pacman.controllers.HumanController;
-import pacman.controllers.KeyBoardInput;
-import pacman.controllers.examples.AggressiveGhosts;
-import pacman.controllers.examples.Legacy;
-import pacman.controllers.examples.Legacy2TheReckoning;
-import pacman.controllers.examples.NearestPillPacMan;
-import pacman.controllers.examples.NearestPillPacManVS;
 import pacman.controllers.examples.RandomGhosts;
-import pacman.controllers.examples.RandomNonRevPacMan;
-import pacman.controllers.examples.RandomPacMan;
-import pacman.controllers.examples.StarterGhosts;
-import pacman.controllers.examples.StarterPacMan;
-import pacman.entries.pacman.MyPacMan;
-import pacman.entries.pacman.wiba.PacManBT;
+import pacman.entries.pacman.wiba.WibaPacManBT;
+import pacman.entries.pacman.wiba.WibaPacManMCTS;
 import pacman.game.Game;
 import pacman.game.GameView;
 
@@ -66,7 +56,7 @@ public class Executor
 		//exec.runGameTimed(new NearestPillPacMan(),new AggressiveGhosts(),visual);
 		//exec.runGameTimed(new MyPacMan(),new StarterGhosts(), visual);
 		//exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(),visual);
-		exec.runGameTimed(new PacManBT(), new RandomGhosts(), visual);
+		exec.runGameTimed(new WibaPacManMCTS(), new RandomGhosts(), visual);
 		
 		/*
 		//run the game in asynchronous mode but advance as soon as both controllers are ready  - this is the mode of the competition.
