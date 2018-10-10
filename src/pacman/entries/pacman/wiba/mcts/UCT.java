@@ -104,15 +104,32 @@ public class UCT {
     private float DefaultPolicy() {
         Game st = currentNode.gameState.copy();
         Constants.MOVE pacmanAction = Constants.MOVE.NEUTRAL;
-        while(!TerminalState(st)){
+
+        int maxIterations = 50;
+        int actualIterations = 0;
+        int numberOfActivePillsStart = st.getActivePillsIndices().length;
+        while(actualIterations < maxIterations && !TerminalState(st)){
             // let pacman decide the direction at every junction
-            if(st.isJunction(st.getPacmanCurrentNodeIndex())) {
+            int pacmanIndex = st.getPacmanCurrentNodeIndex();
+            if(st.isJunction(pacmanIndex)) {
                 pacmanAction = RandomPossibleAction(st);
+            } else {
+                // if the pacman would run into a wall because its a winding path
+                ArrayList<Constants.MOVE> possibleMoves = new ArrayList<>(Arrays.asList(st.getPossibleMoves(pacmanIndex)));
+                if(!possibleMoves.contains(pacmanAction)) {
+                    possibleMoves.remove(pacmanAction.opposite());
+                    pacmanAction = possibleMoves.get(0);
+                }
             }
             EnumMap<pacman.game.Constants.GHOST, pacman.game.Constants.MOVE> ghostMoves = ghostsController.getMove(st, System.currentTimeMillis() + 5);
             st.advanceGame(pacmanAction, ghostMoves);
+
+            actualIterations++;
         }
-        return st.wasPacManEaten() ? 0 : 1;
+        float diffPills = numberOfActivePillsStart - st.getActivePillsIndices().length;
+        float reward = st.wasPacManEaten() ? 0 : diffPills/(actualIterations+1.0f);
+
+        return reward;
     }
 
     /**
