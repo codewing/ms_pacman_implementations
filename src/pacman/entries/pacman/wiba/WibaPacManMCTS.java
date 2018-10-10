@@ -11,6 +11,7 @@ import pacman.entries.pacman.wiba.bt.leaf.FleeAction;
 import pacman.entries.pacman.wiba.bt.leaf.SetVariableLeaf;
 import pacman.entries.pacman.wiba.bt.utils.IControllerActions;
 import pacman.entries.pacman.wiba.mcts.UCT;
+import pacman.entries.pacman.wiba.utils.Utils;
 import pacman.game.Constants;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
@@ -26,14 +27,18 @@ public class WibaPacManMCTS extends Controller<MOVE> {
     private UCT uct;
 
     public MOVE getMove(Game game, long timeDue) {
+
         uct = new UCT(game, timeDue);
-        setNextMove(uct.runUCT());
+        MOVE nextMove = uct.runUCT();
+        if(nextMove == null) {
+            System.err.println("ERROR calculating the next move!");
+        } else {
+            myMove = nextMove;
+        }
+
+        System.out.println("Time done: " + Utils.getFormattedTime(System.currentTimeMillis()));
 
         return myMove;
-    }
-
-    public void setNextMove(MOVE nextMove) {
-        this.myMove = nextMove;
     }
 
 }

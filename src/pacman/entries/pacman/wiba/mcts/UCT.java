@@ -57,7 +57,7 @@ public class UCT {
          */
         long deltaTimeNS = 0;
         long lastNS = System.nanoTime();
-        while(!Terminate(deltaTimeNS)){
+        while(!Terminate(deltaTimeNS*2)){
 
             TreePolicy();
             float reward = DefaultPolicy();
@@ -77,7 +77,7 @@ public class UCT {
         Optional<MctsNode> bestNode = currentNode.children.stream().max(Comparator.comparingInt(n -> n.timesvisited));
         if(bestNode.isPresent()) return bestNode.get().parentAction;
 
-        return Constants.MOVE.NEUTRAL;
+        return null;
     }
 
     /**
