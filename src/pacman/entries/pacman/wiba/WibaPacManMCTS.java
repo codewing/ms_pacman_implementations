@@ -26,8 +26,7 @@ public class WibaPacManMCTS extends Controller<MOVE> {
     private UCT uct;
 
     public MOVE getMove(Game game, long timeDue) {
-
-        uct = new UCT(game);
+        uct = new UCT(game, timeDue);
         setNextMove(uct.runUCT());
 
         return myMove;

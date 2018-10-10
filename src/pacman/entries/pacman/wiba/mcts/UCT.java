@@ -1,10 +1,12 @@
 package pacman.entries.pacman.wiba.mcts;
 
 import pacman.controllers.examples.StarterGhosts;
+import pacman.entries.pacman.wiba.utils.Utils;
 import pacman.game.Constants;
 import pacman.game.Game;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class UCT {
@@ -15,33 +17,28 @@ public class UCT {
     private Random random = new Random();
     private StarterGhosts ghostsController = new StarterGhosts();
 
-    /*
-     * rootNode is the starting point of the present state
-     */
-    private MctsNode rootNode;
+    private MctsNode rootNode; // place where we start
+    private MctsNode currentNode; // currently processing this node
 
-    /*
-     * currentNode refers to the node we work at every step
-     */
-    private MctsNode currentNode;
-
-    /*
-     * Exploration coefficient
-     */
-    private float explorCoeff = (float) (1.0/Math.sqrt(2));
+    private final float explorationCoefficient = (float) (1.0/Math.sqrt(2));
 
     /*
      * Computational limit
      */
-    private final int maxIterations = 100;
+    private final long timeDue;
 
+    private final long initTime;
 
     /**
      * Constructor
      * get the current game
      */
-    public UCT(Game game){
+    public UCT(Game game, long timeDue){
         this.game = game;
+        this.timeDue = timeDue;
+        this.initTime = System.currentTimeMillis();
+
+        System.out.println("Started MCTS with UCT at " + Utils.getFormattedTime(initTime) + " and it is allowed to run until " + Utils.getFormattedTime(timeDue));
     }
 
     /**
@@ -58,13 +55,17 @@ public class UCT {
         /*
          * Apply UCT search inside computational budget limit (default=100 iterations)
          */
-        int iterations = 0;
-        while(!Terminate(iterations)){
-            iterations ++;
+        long deltaTimeNS = 0;
+        long lastNS = System.nanoTime();
+        while(!Terminate(deltaTimeNS)){
 
             TreePolicy();
             float reward = DefaultPolicy();
             Backpropagate(reward);
+
+            long currentNS = System.nanoTime();
+            deltaTimeNS = currentNS - lastNS;
+            lastNS = currentNS;
         }
 
         /*
@@ -81,7 +82,7 @@ public class UCT {
 
     /**
      * Expand the nonterminal nodes with one available child.
-     * Chose a node to expand with BestChild(explorCoeff) method
+     * Chose a node to expand with BestChild(explorationCoefficient) method
      */
     private void TreePolicy() {
         currentNode = rootNode;
@@ -91,7 +92,7 @@ public class UCT {
                 Expand();
                 return;
             } else {
-                BestChild(explorCoeff);
+                BestChild(explorationCoefficient);
             }
         }
     }
@@ -108,7 +109,7 @@ public class UCT {
             if(st.isJunction(st.getPacmanCurrentNodeIndex())) {
                 pacmanAction = RandomPossibleAction(st);
             }
-            EnumMap<pacman.game.Constants.GHOST, pacman.game.Constants.MOVE> ghostMoves = ghostsController.getMove(st, 10);
+            EnumMap<pacman.game.Constants.GHOST, pacman.game.Constants.MOVE> ghostMoves = ghostsController.getMove(st, System.currentTimeMillis() + 5);
             st.advanceGame(pacmanAction, ghostMoves);
         }
         return st.wasPacManEaten() ? 0 : 1;
@@ -226,11 +227,12 @@ public class UCT {
 
     /**
      * Check if the algorithm is to be terminated, e.g. reached number of iterations limit
-     * @param i
+     * @param lastDeltaNS the amount of time the last iteration took
      * @return
      */
-    private boolean Terminate(int i) {
-        if (i>maxIterations) return true;
+    private boolean Terminate(long lastDeltaNS) {
+        long lastDeltaMillis = TimeUnit.MILLISECONDS.convert(lastDeltaNS, TimeUnit.NANOSECONDS);
+        if ( System.currentTimeMillis() + lastDeltaMillis > timeDue) return true;
         return false;
     }
 
@@ -251,7 +253,7 @@ public class UCT {
      * @return returns an {@link EnumMap} containing the move for each ghost
      */
     private EnumMap<Constants.GHOST, Constants.MOVE> GhostAIActions(Game gameState) {
-        return ghostsController.getMove(gameState, 50);
+        return ghostsController.getMove(gameState, System.currentTimeMillis() + 5);
     }
 
 }
