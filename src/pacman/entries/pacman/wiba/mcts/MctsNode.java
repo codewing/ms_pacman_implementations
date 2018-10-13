@@ -13,7 +13,7 @@ public class MctsNode{
     MctsNode parent = null;
     Constants.MOVE parentAction = null;
     float reward = 0;
-    int timesvisited = 0;
+    int timesVisited = 0;
 
 
     MctsNode(Game gameState){

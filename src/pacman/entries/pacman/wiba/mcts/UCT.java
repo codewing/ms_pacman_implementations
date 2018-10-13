@@ -7,7 +7,6 @@ import pacman.game.Game;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class UCT {
     /*
@@ -57,7 +56,7 @@ public class UCT {
          */
         long deltaTimeNS = 0;
         long lastNS = System.nanoTime();
-        while(!Terminate(deltaTimeNS*2)){
+        while(!Terminate(deltaTimeNS)){
 
             TreePolicy();
             float reward = DefaultPolicy();
@@ -74,8 +73,10 @@ public class UCT {
         currentNode = rootNode;
         //rootNode is the one we are working with
         //and we apply the exploitation of it to find the child with the highest average reward
-        Optional<MctsNode> bestNode = currentNode.children.stream().max(Comparator.comparingInt(n -> n.timesvisited));
-        if(bestNode.isPresent()) return bestNode.get().parentAction;
+        Optional<MctsNode> bestNode = currentNode.children.stream().max(Comparator.comparingInt(n -> n.timesVisited));
+        if(bestNode.isPresent()) {
+            return bestNode.get().parentAction;
+        }
 
         return null;
     }
@@ -105,10 +106,10 @@ public class UCT {
         Game st = currentNode.gameState.copy();
         Constants.MOVE pacmanAction = Constants.MOVE.NEUTRAL;
 
-        int maxIterations = 50;
-        int actualIterations = 0;
+        int maxSteps = 40;
+        int actualSteps = 0;
         int numberOfActivePillsStart = st.getActivePillsIndices().length;
-        while(actualIterations < maxIterations && !TerminalState(st)){
+        while(actualSteps < maxSteps && !TerminalState(st)){
             // let pacman decide the direction at every junction
             int pacmanIndex = st.getPacmanCurrentNodeIndex();
             if(st.isJunction(pacmanIndex)) {
@@ -124,10 +125,10 @@ public class UCT {
             EnumMap<pacman.game.Constants.GHOST, pacman.game.Constants.MOVE> ghostMoves = ghostsController.getMove(st, System.currentTimeMillis() + 5);
             st.advanceGame(pacmanAction, ghostMoves);
 
-            actualIterations++;
+            actualSteps++;
         }
         float diffPills = numberOfActivePillsStart - st.getActivePillsIndices().length;
-        float reward = st.wasPacManEaten() ? 0 : diffPills/(actualIterations+1.0f);
+        float reward = st.wasPacManEaten() ? 0 : diffPills/(actualSteps+1.0f);
 
         return reward;
     }
@@ -139,7 +140,7 @@ public class UCT {
      */
     private void Backpropagate(float reward) {
         while(currentNode != null) {
-            currentNode.timesvisited++;
+            currentNode.timesVisited++;
             currentNode.reward += reward;
             currentNode = currentNode.parent;
         }
@@ -147,14 +148,19 @@ public class UCT {
 
     /**
      * Check if the node is fully expanded
-     * @param nt
+     * @param node
      * @return
      */
-    private boolean FullyExpanded(MctsNode nt) {
-        List<Constants.MOVE> possibleMoves = Arrays.asList(nt.gameState.getPossibleMoves(nt.gameState.getPacmanCurrentNodeIndex()));
+    private boolean FullyExpanded(MctsNode node) {
+        ArrayList<Constants.MOVE> possibleMoves = new ArrayList<>(Arrays.asList(node.gameState.getPossibleMoves(node.gameState.getPacmanCurrentNodeIndex())));
         possibleMoves.remove(Constants.MOVE.NEUTRAL);
 
-        return nt.children.size() == possibleMoves.size();
+        // remove the return move
+        if(node.parent != null) {
+            possibleMoves.remove(node.parentAction.opposite());
+        }
+
+        return node.children.size() == possibleMoves.size();
     }
 
     /**
@@ -175,7 +181,7 @@ public class UCT {
         MctsNode nt = currentNode;
         MctsNode bestChild = null;
 
-        float bestUCTValue = -1;
+        float bestUCTValue = Float.MIN_VALUE;
         for(MctsNode child : nt.children) {
             float childValue = UCTvalue(child, c);
             if(childValue > bestUCTValue) {
@@ -183,6 +189,8 @@ public class UCT {
                 bestUCTValue = childValue;
             }
         }
+
+        assert bestChild != null;
 
         currentNode = bestChild;
     }
@@ -194,7 +202,7 @@ public class UCT {
      * @return
      */
     private float UCTvalue(MctsNode n, float c) {
-        return (float) (n.reward / n.timesvisited + c * Math.sqrt( Math.log(n.parent.timesvisited) / n.timesvisited));
+        return (float) (n.reward / n.timesVisited + c * Math.sqrt( Math.log(n.parent.timesVisited) / n.timesVisited));
     }
 
     /**
@@ -202,11 +210,9 @@ public class UCT {
      */
     private void Expand() {
 
-        // copy the state for the child node
         Game nextGameState = currentNode.gameState.copy();
 
-        // Get Move for Pacman and AI
-        Constants.MOVE pacmanMove = UntriedAction(currentNode);
+        Constants.MOVE pacmanMove = UnperformedAction(currentNode);
         EnumMap ghostMoves = GhostAIActions(currentNode.gameState);
 
         // Advance the game and create a new node for the new state
@@ -217,29 +223,28 @@ public class UCT {
         child.parentAction = pacmanMove;
 
         currentNode.children.add(child);
-
         currentNode = child;
     }
 
     /**
-     * Returns the first untried action of the node
+     * Returns all suitable moves for this node
      * @param n
      * @return
      */
-    private Constants.MOVE UntriedAction(MctsNode n) {
-        ArrayList<Constants.MOVE> possibleMoves = new ArrayList<>(Arrays.asList(n.gameState.getPossibleMoves(n.gameState.getPacmanCurrentNodeIndex())));
-        possibleMoves.remove(Constants.MOVE.NEUTRAL);
+    private Constants.MOVE UnperformedAction(MctsNode n) {
+        ArrayList<Constants.MOVE> suitableMoves = new ArrayList<>(Arrays.asList(n.gameState.getPossibleMoves(n.gameState.getPacmanCurrentNodeIndex())));
+        suitableMoves.remove(Constants.MOVE.NEUTRAL);
 
-        List<Constants.MOVE> executedMoves = n.children.parallelStream().map(child -> child.parentAction).collect(Collectors.toList());
-        for(Constants.MOVE move : executedMoves) {
-            possibleMoves.remove(move);
+        suitableMoves.removeIf(suitableMove -> n.children.contains(suitableMove));
+
+        // remove the return move
+        if(n.parent != null) {
+            suitableMoves.remove(n.parentAction.opposite());
         }
 
-        if(possibleMoves.size() > 0){
-            return possibleMoves.get(0);
-        }
+        assert suitableMoves.size() > 0;
 
-        throw new RuntimeException("All possible moves tried. Why am I here?");
+        return suitableMoves.get(random.nextInt(suitableMoves.size()));
     }
 
     /**
@@ -249,7 +254,8 @@ public class UCT {
      */
     private boolean Terminate(long lastDeltaNS) {
         long lastDeltaMillis = TimeUnit.MILLISECONDS.convert(lastDeltaNS, TimeUnit.NANOSECONDS);
-        if ( System.currentTimeMillis() + lastDeltaMillis > timeDue) return true;
+        long returnTimeMS = 2; // approx. time required to return to the getMove method
+        if ( System.currentTimeMillis() + lastDeltaMillis + returnTimeMS > timeDue) return true;
         return false;
     }
 
