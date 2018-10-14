@@ -7,12 +7,9 @@ import pacman.game.Game;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class UCT {
-    /*
-     * Maze used to control the game
-     */
-    private Game game;
     private Random random = new Random();
     private StarterGhosts ghostsController = new StarterGhosts();
 
@@ -26,18 +23,16 @@ public class UCT {
      */
     private final long timeDue;
 
-    private final long initTime;
-
     /**
      * Constructor
      * get the current game
      */
-    public UCT(Game game, long timeDue){
-        this.game = game;
+    public UCT(Game gameState, long timeDue){
+        this.rootNode = new MctsNode(gameState.copy());
         this.timeDue = timeDue;
-        this.initTime = System.currentTimeMillis();
 
-        System.out.println("Started MCTS with UCT at " + Utils.getFormattedTime(initTime) + " and it is allowed to run until " + Utils.getFormattedTime(timeDue));
+        System.out.println("Started MCTS with UCT at " + Utils.getFormattedTime(System.currentTimeMillis())
+                + " and it is allowed to run until " + Utils.getFormattedTime(timeDue));
     }
 
     /**
@@ -45,19 +40,13 @@ public class UCT {
      * @return best move for the current simulation
      */
     public Constants.MOVE runUCT() {
-
-        /*
-         * Create root node with the present state
-         */
-        rootNode = new MctsNode(game.copy());
-
         /*
          * Apply UCT search inside computational budget limit (default=100 iterations)
          */
         long deltaTimeNS = 0;
         long lastNS = System.nanoTime();
-        while(!Terminate(deltaTimeNS)){
 
+        while(!Terminate(deltaTimeNS)){
             TreePolicy();
             float reward = DefaultPolicy();
             Backpropagate(reward);
@@ -122,15 +111,56 @@ public class UCT {
                     pacmanAction = possibleMoves.get(0);
                 }
             }
-            EnumMap<pacman.game.Constants.GHOST, pacman.game.Constants.MOVE> ghostMoves = ghostsController.getMove(st, System.currentTimeMillis() + 5);
-            st.advanceGame(pacmanAction, ghostMoves);
+            simulateOneStep(st, pacmanAction);
 
             actualSteps++;
         }
         float diffPills = numberOfActivePillsStart - st.getActivePillsIndices().length;
-        float reward = st.wasPacManEaten() ? 0 : diffPills/(actualSteps+1.0f);
+        float reward = st.wasPacManEaten() ? 0 : diffPills/(Math.max(actualSteps,1.0f));
 
         return reward;
+    }
+
+    /**
+     * Takes a game state and simulates moves following the path until a junction is reached
+     * @param gameState
+     */
+    void simulateUntilNextJunction(Game gameState) {
+        Constants.MOVE pacmanAction = Constants.MOVE.NEUTRAL;
+
+        while(!isPacmanAtJunction(gameState)) {
+            int pacmanIndex = gameState.getPacmanCurrentNodeIndex();
+
+            ArrayList<Constants.MOVE> possibleMoves = getAvailableMoves(gameState, pacmanIndex);
+            if(!possibleMoves.contains(pacmanAction)) {
+                possibleMoves.remove(pacmanAction.opposite());
+                pacmanAction = possibleMoves.get(0);
+            }
+
+            simulateOneStep(gameState, pacmanAction);
+        }
+    }
+
+    void simulateOneStep(Game gameState, Constants.MOVE pacmanAction) {
+        EnumMap<pacman.game.Constants.GHOST, pacman.game.Constants.MOVE> ghostMoves = ghostsController.getMove(gameState, System.currentTimeMillis() + 5);
+        gameState.advanceGame(pacmanAction, ghostMoves);
+    }
+
+    boolean isPacmanAtJunction(Game gameState) {
+        return gameState.isJunction(gameState.getPacmanCurrentNodeIndex());
+    }
+
+    /**
+     * Returns the possible moves without the neutral move
+     * @param gameState
+     * @param index
+     * @return
+     */
+    ArrayList<Constants.MOVE> getAvailableMoves(Game gameState, int index) {
+        ArrayList<Constants.MOVE> possibleMoves = new ArrayList<>(Arrays.asList(gameState.getPossibleMoves(index)));
+        possibleMoves.remove(Constants.MOVE.NEUTRAL);
+
+        return possibleMoves;
     }
 
     /**
@@ -152,8 +182,7 @@ public class UCT {
      * @return
      */
     private boolean FullyExpanded(MctsNode node) {
-        ArrayList<Constants.MOVE> possibleMoves = new ArrayList<>(Arrays.asList(node.gameState.getPossibleMoves(node.gameState.getPacmanCurrentNodeIndex())));
-        possibleMoves.remove(Constants.MOVE.NEUTRAL);
+        ArrayList<Constants.MOVE> possibleMoves = getAvailableMoves(node.gameState, node.gameState.getPacmanCurrentNodeIndex());
 
         // remove the return move
         if(node.parent != null) {
@@ -209,14 +238,14 @@ public class UCT {
      * Expand the current node by adding new child to the currentNode
      */
     private void Expand() {
-
         Game nextGameState = currentNode.gameState.copy();
-
         Constants.MOVE pacmanMove = UnperformedAction(currentNode);
         EnumMap ghostMoves = GhostAIActions(currentNode.gameState);
-
         // Advance the game and create a new node for the new state
         nextGameState.advanceGame(pacmanMove, ghostMoves);
+
+        simulateUntilNextJunction(nextGameState);
+
         MctsNode child = new MctsNode(nextGameState);
 
         child.parent = currentNode;
@@ -232,10 +261,12 @@ public class UCT {
      * @return
      */
     private Constants.MOVE UnperformedAction(MctsNode n) {
-        ArrayList<Constants.MOVE> suitableMoves = new ArrayList<>(Arrays.asList(n.gameState.getPossibleMoves(n.gameState.getPacmanCurrentNodeIndex())));
-        suitableMoves.remove(Constants.MOVE.NEUTRAL);
+        ArrayList<Constants.MOVE> suitableMoves = getAvailableMoves(n.gameState, n.gameState.getPacmanCurrentNodeIndex());
 
-        suitableMoves.removeIf(suitableMove -> n.children.contains(suitableMove));
+        // remove tried options
+        for(MctsNode child : n.children) {
+            suitableMoves.remove(child.parentAction);
+        }
 
         // remove the return move
         if(n.parent != null) {
@@ -277,6 +308,19 @@ public class UCT {
      */
     private EnumMap<Constants.GHOST, Constants.MOVE> GhostAIActions(Game gameState) {
         return ghostsController.getMove(gameState, System.currentTimeMillis() + 5);
+    }
+
+    private void printPath(MctsNode node) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Path: ");
+        MctsNode currentNode = node;
+        while(currentNode != null) {
+            sb.append("/");
+            sb.append(currentNode.parentAction);
+            currentNode = currentNode.parent;
+        }
+
+        System.out.println(sb.toString());
     }
 
 }
