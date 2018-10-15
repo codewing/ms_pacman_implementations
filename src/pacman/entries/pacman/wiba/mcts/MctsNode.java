@@ -13,10 +13,12 @@ public class MctsNode{
     MctsNode parent = null;
     Constants.MOVE parentAction = null;
     float reward = 0;
+    int pathLengthInSteps = 0;
     int timesVisited = 0;
 
 
-    MctsNode(Game gameState){
+    MctsNode(Game gameState, int pathLengthInSteps){
         this.gameState = gameState;
+        this.pathLengthInSteps = pathLengthInSteps;
     }
 }
