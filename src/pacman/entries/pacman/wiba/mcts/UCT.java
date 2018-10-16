@@ -12,12 +12,11 @@ public class UCT {
     private Random random = new Random();
     private StarterGhosts ghostsController = new StarterGhosts();
 
-    private MctsNode rootNode; // place where we start
-    private MctsNode currentNode; // currently processing this node
+    private MCTSNode rootNode; // place where we start
+    private MCTSNode currentNode; // currently processing this node
 
     private final float explorationCoefficient = (float) (1.0/Math.sqrt(2));
 
-    float numberOfActivePillsStart;
     int maxPathLength = 40;
 
     /*
@@ -30,10 +29,8 @@ public class UCT {
      * get the current game
      */
     public UCT(Game gameState, long timeDue){
-        this.rootNode = new MctsNode(gameState.copy(), 0);
+        this.rootNode = new MCTSNode(gameState.copy(), 0);
         this.timeDue = timeDue;
-
-        this.numberOfActivePillsStart = gameState.getActivePillsIndices().length;
 
         System.out.println("Started MCTS with UCT at " + Utils.getFormattedTime(System.currentTimeMillis())
                 + " and it is allowed to run until " + Utils.getFormattedTime(timeDue));
@@ -66,7 +63,7 @@ public class UCT {
         currentNode = rootNode;
         //rootNode is the one we are working with
         //and we apply the exploitation of it to find the child with the highest average reward
-        Optional<MctsNode> bestNode = currentNode.children.stream().max(Comparator.comparingDouble(n -> n.timesVisited));
+        Optional<MCTSNode> bestNode = currentNode.children.stream().max(Comparator.comparingDouble(n -> n.timesVisited));
         if(bestNode.isPresent()) {
             return bestNode.get().parentAction;
         }
@@ -82,11 +79,20 @@ public class UCT {
         currentNode = rootNode;
 
         while(!TerminalState(currentNode.gameState)) {
-            if(!FullyExpanded()) {
+            if(!currentNode.isFullyExpanded()) {
                 Expand();
                 return;
             } else {
-                BestChild(explorationCoefficient);
+                if(currentNode.children.isEmpty()) { return; } // simulation depth reached (fully expaneded + no children)
+
+                // randomize selection if visit count of one child < min visit count
+                if(currentNode.children.parallelStream()
+                        .map(c -> c.timesVisited)
+                        .min(Integer::compareTo).get() > MCTSParams.MIN_VISIT_COUNT) {
+                    currentNode = currentNode.children.get(random.nextInt(currentNode.children.size()));
+                } else {
+                    currentNode = currentNode.getBestChild();
+                }
             }
         }
     }
@@ -120,7 +126,7 @@ public class UCT {
 
             actualSteps++;
         }
-        float pillsPercentage = st.getActivePillsIndices().length / numberOfActivePillsStart;
+        float pillsPercentage = 1 - st.getActivePillsIndices().length / (float)(st.getPillIndices().length);
         float reward = st.wasPacManEaten() ? 0 : pillsPercentage;
 
         return reward;
@@ -134,7 +140,7 @@ public class UCT {
         Constants.MOVE pacmanAction = Constants.MOVE.NEUTRAL;
         int steps = 0;
 
-        while(!isPacmanAtJunction(gameState)) {
+        while(!isPacmanAtJunction(gameState) && !gameState.wasPacManEaten()) {
             int pacmanIndex = gameState.getPacmanCurrentNodeIndex();
 
             ArrayList<Constants.MOVE> possibleMoves = getAvailableMoves(gameState, pacmanIndex);
@@ -147,7 +153,7 @@ public class UCT {
             steps++;
         }
 
-        return steps;
+        return gameState.wasPacManEaten() ? -1 : steps;
     }
 
     void simulateOneStep(Game gameState, Constants.MOVE pacmanAction) {
@@ -189,17 +195,7 @@ public class UCT {
         }
     }
 
-    /**
-     * Check if the node is fully expanded
-     * @return true or false
-     */
-    private boolean FullyExpanded() {
-        ArrayList<Constants.MOVE> possibleMoves = UnperformedActions(currentNode);
-        System.out.println("fully: " + possibleMoves);
-        return possibleMoves.isEmpty();
-    }
-
-    private int getDistanceToNextJunction(MctsNode node, Constants.MOVE direction) {
+    private int getDistanceToNextJunction(MCTSNode node, Constants.MOVE direction) {
         Game tempState = node.gameState.copy();
 
         simulateOneStep(tempState, direction);
@@ -213,40 +209,7 @@ public class UCT {
      * @return
      */
     private boolean TerminalState(Game gameState) {
-        return gameState.wasPacManEaten() || gameState.getPillIndices().length == 0;
-    }
-
-    /**
-     * Choose the best child according to the UCT value
-     * Assign it as a currentNode
-     * @param c Exploration coefficient
-     */
-    private void BestChild(float c) {
-        MctsNode nt = currentNode;
-        MctsNode bestChild = null;
-
-        float bestUCTValue = Float.MIN_VALUE;
-        for(MctsNode child : nt.children) {
-            float childValue = UCTvalue(child, c);
-            if(childValue > bestUCTValue) {
-                bestChild = child;
-                bestUCTValue = childValue;
-            }
-        }
-
-        assert bestChild != null;
-
-        currentNode = bestChild;
-    }
-
-    /**
-     * Calculate UCT value for the best child choosing
-     * @param n child node of currentNode
-     * @param c Exploration coefficient
-     * @return
-     */
-    private float UCTvalue(MctsNode n, float c) {
-        return (float) (n.reward / n.timesVisited + c * Math.sqrt( Math.log(n.parent.timesVisited) / n.timesVisited));
+        return gameState.wasPacManEaten() || gameState.getActivePillsIndices().length == 0;
     }
 
     /**
@@ -255,8 +218,7 @@ public class UCT {
     private void Expand() {
         Game nextGameState = currentNode.gameState.copy();
 
-        ArrayList<Constants.MOVE> unperformedActions = UnperformedActions(currentNode);
-        System.out.println("expand: " + unperformedActions);
+        ArrayList<Constants.MOVE> unperformedActions = currentNode.getPacmanMovesNotExpanded();
         Constants.MOVE pacmanMove = unperformedActions.get(random.nextInt(unperformedActions.size()));
 
         EnumMap ghostMoves = GhostAIActions(currentNode.gameState);
@@ -265,7 +227,7 @@ public class UCT {
 
         int pathLengthInSteps = simulateUntilNextJunction(nextGameState);
 
-        MctsNode child = new MctsNode(nextGameState, pathLengthInSteps);
+        MCTSNode child = new MCTSNode(nextGameState, pathLengthInSteps);
 
         child.parent = currentNode;
         child.parentAction = pacmanMove;
@@ -275,31 +237,7 @@ public class UCT {
     }
 
     /**
-     * Returns all suitable moves for this node
-     * @param node
-     * @return
-     */
-    private ArrayList<Constants.MOVE> UnperformedActions(MctsNode node) {
-        ArrayList<Constants.MOVE> suitableMoves = getAvailableMoves(node.gameState, node.gameState.getPacmanCurrentNodeIndex());
-
-        // remove tried options
-        for(MctsNode child : node.children) {
-            suitableMoves.remove(child.parentAction);
-        }
-
-        // remove the return move
-        if(node.parent != null) {
-            suitableMoves.remove(node.parentAction.opposite());
-        }
-
-        // remove if path too long
-        suitableMoves.removeIf(direction -> getDistanceToNextJunction(node, direction) > maxPathLength);
-
-        return suitableMoves;
-    }
-
-    /**
-     * Check if the algorithm is to be terminated, e.g. reached number of iterations limit
+     * Check if the algorithm is to be terminated
      * @param lastDeltaNS the amount of time the last iteration took
      * @return
      */
@@ -328,19 +266,6 @@ public class UCT {
      */
     private EnumMap<Constants.GHOST, Constants.MOVE> GhostAIActions(Game gameState) {
         return ghostsController.getMove(gameState, System.currentTimeMillis() + 5);
-    }
-
-    private void printPath(MctsNode node) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Path: ");
-        MctsNode currentNode = node;
-        while(currentNode != null) {
-            sb.append("/");
-            sb.append(currentNode.parentAction);
-            currentNode = currentNode.parent;
-        }
-
-        System.out.println(sb.toString());
     }
 
 }

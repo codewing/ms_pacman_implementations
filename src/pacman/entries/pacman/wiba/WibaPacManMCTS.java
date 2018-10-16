@@ -1,18 +1,9 @@
 package pacman.entries.pacman.wiba;
 
 import pacman.controllers.Controller;
-import pacman.entries.pacman.wiba.bt.Blackboard;
-import pacman.entries.pacman.wiba.bt.TreeNode;
-import pacman.entries.pacman.wiba.bt.composite.Selector;
-import pacman.entries.pacman.wiba.bt.composite.Sequence;
-import pacman.entries.pacman.wiba.bt.leaf.CheckVariableLeaf;
-import pacman.entries.pacman.wiba.bt.leaf.CollectClosestPillAction;
-import pacman.entries.pacman.wiba.bt.leaf.FleeAction;
-import pacman.entries.pacman.wiba.bt.leaf.SetVariableLeaf;
-import pacman.entries.pacman.wiba.bt.utils.IControllerActions;
+import pacman.entries.pacman.wiba.mcts.SimpleMCTS;
 import pacman.entries.pacman.wiba.mcts.UCT;
 import pacman.entries.pacman.wiba.utils.Utils;
-import pacman.game.Constants;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 
@@ -24,12 +15,12 @@ import pacman.game.Game;
 public class WibaPacManMCTS extends Controller<MOVE> {
     private MOVE myMove = MOVE.NEUTRAL;
 
-    private UCT uct;
+    private SimpleMCTS mcts;
 
     public MOVE getMove(Game game, long timeDue) {
 
-        uct = new UCT(game, timeDue);
-        MOVE nextMove = uct.runUCT();
+        mcts = new SimpleMCTS(game, timeDue);
+        MOVE nextMove = mcts.runMCTS();
         if(nextMove == null) {
             System.err.println("ERROR calculating the next move!");
         } else {
