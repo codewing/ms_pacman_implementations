@@ -33,6 +33,8 @@ public class SimpleMCTS {
         while (!Terminate(deltaTimeNS)) {
 
             MCTSNode selectedNode = TreePolicy(rootNode);
+            System.err.println("Selected Node path: " + selectedNode.path());
+
             float reward = SimulateGame(selectedNode);
             Backpropagate(selectedNode, reward);
 
@@ -42,7 +44,7 @@ public class SimpleMCTS {
             lastNS = currentNS;
         }
 
-        Optional<MCTSNode> bestNode = rootNode.children.stream().max(Comparator.comparingDouble(n -> n.reward));
+        Optional<MCTSNode> bestNode = rootNode.children.stream().max(Comparator.comparingDouble(n -> n.getReward()));
         if(bestNode.isPresent()) {
             return bestNode.get().parentAction;
         }
@@ -63,15 +65,19 @@ public class SimpleMCTS {
     }
 
     MCTSNode TreePolicy(MCTSNode currentNode) {
+        System.err.println("called with: " + currentNode.path());
         if(currentNode.isGameOver()) {
+            System.err.println("gameover");
             return currentNode.parent != null ? currentNode.parent : currentNode;
         }
 
         if(!currentNode.isFullyExpanded()) {
+            System.err.println("expanded");
             return expandNode(currentNode);
         }
 
         if(currentNode.children.isEmpty()) {
+            System.err.println("empty");
             return currentNode; // simulation depth reached (fully expanded + no children)
         }
 
@@ -82,20 +88,24 @@ public class SimpleMCTS {
                     .min(Integer::compareTo).get() > MCTSParams.MIN_VISIT_COUNT;
 
         if(allChildsVisitsAboveMinVisitCount) {
-            return TreePolicy(currentNode.children.get(random.nextInt(currentNode.children.size())));
-        } else {
+            System.err.println("childbest");
             return TreePolicy(currentNode.getBestChild());
+        } else {
+            System.err.println("childrnd");
+            return TreePolicy(currentNode.children.get(random.nextInt(currentNode.children.size())));
         }
     }
 
     MCTSNode expandNode(MCTSNode parentNode) {
         ArrayList<Constants.MOVE> pacmanMoves = parentNode.getPacmanMovesNotExpanded();
+        assert !pacmanMoves.isEmpty();
+        Constants.MOVE pacmanMove = pacmanMoves.get(random.nextInt(pacmanMoves.size()));
 
-        SimulationResult result = Utils.simulateUntilNextJunction(parentNode.gameState.copy(), ghostsController, pacmanMoves.get(0));
+        SimulationResult result = Utils.simulateUntilNextJunction(parentNode.gameState.copy(), ghostsController, pacmanMove);
 
         MCTSNode child = new MCTSNode(result.gameState, parentNode.pathLengthInSteps + result.steps);
 
-        child.parentAction = pacmanMoves.get(0);
+        child.parentAction = pacmanMove;
         child.parent = parentNode;
 
         parentNode.children.add(child);
@@ -104,6 +114,8 @@ public class SimpleMCTS {
             // make sure this node doesn't get simulated but simulate the parent
             child.reward = -1;
             child.timesVisited = 1;
+
+            return parentNode;
         }
 
         return child;
@@ -111,15 +123,13 @@ public class SimpleMCTS {
 
     private float SimulateGame(MCTSNode selectedNode) {
 
-        Game simulationGameState = selectedNode.gameState;
+        Game simulationGameState = selectedNode.gameState.copy();
         int remainingSteps = MCTSParams.MAX_PATH_LENGTH - selectedNode.pathLengthInSteps;
         SimulationResult lastSimulationResult;
 
-        Constants.MOVE moveDirection = selectedNode.parentAction;
-
         while(remainingSteps > 0) {
-
-            Constants.MOVE pacmanMove = Utils.getPacmanMoveAtJunctionWithoutReverse(simulationGameState, moveDirection);
+            ArrayList<Constants.MOVE> availableMoves = Utils.getPacmanMovesAtJunctionWithoutReverse(simulationGameState);
+            Constants.MOVE pacmanMove = availableMoves.get(random.nextInt(availableMoves.size()));
 
             lastSimulationResult = Utils.simulateToNextJunctionOrLimit(simulationGameState, ghostsController, pacmanMove, remainingSteps);
 
@@ -133,7 +143,7 @@ public class SimpleMCTS {
     }
 
     private void Backpropagate(MCTSNode selectedNode, float reward) {
-        selectedNode.reward = Math.max(reward, selectedNode.reward);
+        selectedNode.reward = Math.max(reward, (float)selectedNode.getReward());
 
         while (selectedNode != null) {
             selectedNode.timesVisited++;

@@ -2,7 +2,6 @@ package pacman.entries.pacman.wiba;
 
 import pacman.controllers.Controller;
 import pacman.entries.pacman.wiba.mcts.SimpleMCTS;
-import pacman.entries.pacman.wiba.mcts.UCT;
 import pacman.entries.pacman.wiba.utils.Utils;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;

@@ -38,11 +38,11 @@ public abstract class Utils {
     public static SimulationResult simulateToNextJunctionOrLimit(Game gameState, Controller<EnumMap<Constants.GHOST,Constants.MOVE>> ghostController, Constants.MOVE direction, int maxSteps) {
         SimulationResult result = new SimulationResult();
 
+        Constants.MOVE currentPacmanDirection = direction;
         do {
-            Constants.MOVE pacmanMove = getPacmanMoveAlongPath(gameState, direction);
-            direction = pacmanMove;
+            currentPacmanDirection = getPacmanMoveAlongPath(gameState, currentPacmanDirection);
 
-            gameState.advanceGame(pacmanMove, ghostController.getMove(gameState, System.currentTimeMillis() + MCTSParams.ghostSimulationTimeMS));
+            gameState.advanceGame(currentPacmanDirection, ghostController.getMove(gameState, System.currentTimeMillis() + MCTSParams.ghostSimulationTimeMS));
 
             // update stats
             result.steps++;
@@ -51,29 +51,28 @@ public abstract class Utils {
                 result.diedDuringSimulation = true;
                 break;
             }
-
-        } while(gameState.isJunction(gameState.getPacmanCurrentNodeIndex()) && maxSteps > 0);
+        } while(!gameState.isJunction(gameState.getPacmanCurrentNodeIndex()) && maxSteps > 0);
 
         result.gameState = gameState;
 
         return result;
     }
 
-    public static Constants.MOVE getPacmanMoveAtJunctionWithoutReverse(Game gameState, Constants.MOVE direction) {
+    public static ArrayList<Constants.MOVE> getPacmanMovesAtJunctionWithoutReverse(Game gameState) {
         ArrayList<Constants.MOVE> moves = getPacmanMovesWithoutNeutral(gameState);
+        System.err.println("Available directions: " + moves);
+        moves.remove(gameState.getPacmanLastMoveMade().opposite());
 
-        moves.remove(direction.opposite());
-
-        return moves.get(0);
+        return moves;
     }
 
     public static Constants.MOVE getPacmanMoveAlongPath(Game gameState, Constants.MOVE direction) {
         ArrayList<Constants.MOVE> moves = getPacmanMovesWithoutNeutral(gameState);
-
+        System.err.println("moves: " + moves + " target direction " + direction);
         if(moves.contains(direction)) return direction;
-
-        moves.remove(direction.opposite());
-
+        System.err.println("last move: " + gameState.getPacmanLastMoveMade());
+        moves.remove(gameState.getPacmanLastMoveMade().opposite());
+        System.err.println("remaining moves: "+ moves);
         assert moves.size() == 1; // along a path there is only one possible way remaining
 
         return moves.get(0);

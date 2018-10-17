@@ -6,6 +6,7 @@ import pacman.game.Game;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 import java.util.stream.Collectors;
 
 public class MCTSNode {
@@ -17,7 +18,7 @@ public class MCTSNode {
     Constants.MOVE parentAction = null;
     List<MCTSNode> children = new ArrayList<>();
 
-    float reward = 0;
+    double reward = 0;
     int timesVisited = 0;
 
 
@@ -27,13 +28,13 @@ public class MCTSNode {
     }
 
     double getReward() {
-        double childrenMax = children.stream().map(node -> node.reward).max(Float::compareTo).orElse(0f);
+        double childrenMax = children.stream().map(MCTSNode::getReward).max(Double::compareTo).orElse(0d);
 
         return Math.max(childrenMax, reward);
     }
 
     double getUCTValue() {
-        double exploitation = reward / timesVisited;
+        double exploitation = getReward() / timesVisited;
         double exploration = MCTSParams.explorationCoefficient * Math.sqrt( Math.log(parent.timesVisited) / timesVisited);
 
         return exploitation + exploration;
@@ -49,7 +50,7 @@ public class MCTSNode {
         ArrayList<Constants.MOVE> moves = Utils.getPacmanMovesWithoutNeutral(gameState);
 
         if(parent != null) {
-            moves.remove(parentAction);
+            moves.remove(parentAction.opposite());
         }
 
         return moves;
@@ -90,5 +91,24 @@ public class MCTSNode {
 
     public boolean isPacmanAtJunction() {
         return gameState.isJunction(gameState.getPacmanCurrentNodeIndex());
+    }
+
+    public String path() {
+        Stack<MCTSNode> pathStack = new Stack<>();
+        MCTSNode currentNode = this;
+
+        while (currentNode.parent != null) {
+            pathStack.push(currentNode);
+            currentNode = currentNode.parent;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        while (!pathStack.empty()) {
+            MCTSNode node = pathStack.pop();
+            sb.append('/');
+            sb.append(node.parentAction);
+        }
+
+        return sb.toString();
     }
 }
