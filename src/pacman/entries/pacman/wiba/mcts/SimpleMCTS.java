@@ -51,7 +51,7 @@ public class SimpleMCTS {
             lastNS = currentNS;
         }
 
-        Optional<MCTSNode> bestNode = rootNode.children.stream().max(Comparator.comparingDouble(n -> n.getReward()));
+        Optional<MCTSNode> bestNode = rootNode.children.stream().max(Comparator.comparingInt(n -> n.timesVisited));
         if(bestNode.isPresent()) {
             return bestNode.get().parentAction;
         }
