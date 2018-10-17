@@ -20,10 +20,18 @@ public class SimpleMCTS {
 
     private final long timeDue;
 
-    public SimpleMCTS(Game gameState, long timeDue) {
+    boolean printLog;
+
+    public SimpleMCTS(Game gameState, long timeDue, boolean printLog) {
         this.rootNode = new MCTSNode(gameState.copy(), 0);
         this.numberOfActivePillsStart = gameState.getNumberOfActivePills();
         this.timeDue = timeDue;
+        this.printLog = printLog;
+
+        if(printLog) {
+            System.out.println("Time started: " + Utils.getFormattedTime(System.currentTimeMillis()));
+            System.out.println("Time due: " + Utils.getFormattedTime(timeDue));
+        }
     }
 
     public Constants.MOVE runMCTS() {
@@ -33,7 +41,6 @@ public class SimpleMCTS {
         while (!Terminate(deltaTimeNS)) {
 
             MCTSNode selectedNode = TreePolicy(rootNode);
-            System.err.println("Selected Node path: " + selectedNode.path());
 
             float reward = SimulateGame(selectedNode);
             Backpropagate(selectedNode, reward);
@@ -65,19 +72,15 @@ public class SimpleMCTS {
     }
 
     MCTSNode TreePolicy(MCTSNode currentNode) {
-        System.err.println("called with: " + currentNode.path());
         if(currentNode.isGameOver()) {
-            System.err.println("gameover");
             return currentNode.parent != null ? currentNode.parent : currentNode;
         }
 
         if(!currentNode.isFullyExpanded()) {
-            System.err.println("expanded");
             return expandNode(currentNode);
         }
 
         if(currentNode.children.isEmpty()) {
-            System.err.println("empty");
             return currentNode; // simulation depth reached (fully expanded + no children)
         }
 
@@ -88,10 +91,8 @@ public class SimpleMCTS {
                     .min(Integer::compareTo).get() > MCTSParams.MIN_VISIT_COUNT;
 
         if(allChildsVisitsAboveMinVisitCount) {
-            System.err.println("childbest");
             return TreePolicy(currentNode.getBestChild());
         } else {
-            System.err.println("childrnd");
             return TreePolicy(currentNode.children.get(random.nextInt(currentNode.children.size())));
         }
     }

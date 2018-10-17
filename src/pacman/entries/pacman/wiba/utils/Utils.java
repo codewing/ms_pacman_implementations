@@ -60,7 +60,6 @@ public abstract class Utils {
 
     public static ArrayList<Constants.MOVE> getPacmanMovesAtJunctionWithoutReverse(Game gameState) {
         ArrayList<Constants.MOVE> moves = getPacmanMovesWithoutNeutral(gameState);
-        System.err.println("Available directions: " + moves);
         moves.remove(gameState.getPacmanLastMoveMade().opposite());
 
         return moves;
@@ -68,11 +67,8 @@ public abstract class Utils {
 
     public static Constants.MOVE getPacmanMoveAlongPath(Game gameState, Constants.MOVE direction) {
         ArrayList<Constants.MOVE> moves = getPacmanMovesWithoutNeutral(gameState);
-        System.err.println("moves: " + moves + " target direction " + direction);
         if(moves.contains(direction)) return direction;
-        System.err.println("last move: " + gameState.getPacmanLastMoveMade());
         moves.remove(gameState.getPacmanLastMoveMade().opposite());
-        System.err.println("remaining moves: "+ moves);
         assert moves.size() == 1; // along a path there is only one possible way remaining
 
         return moves.get(0);

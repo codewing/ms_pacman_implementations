@@ -14,19 +14,20 @@ import pacman.game.Game;
 public class WibaPacManMCTS extends Controller<MOVE> {
     private MOVE myMove = MOVE.NEUTRAL;
 
-    private SimpleMCTS mcts;
+    private final boolean printLog = false;
 
     public MOVE getMove(Game game, long timeDue) {
 
-        mcts = new SimpleMCTS(game, timeDue);
+        SimpleMCTS mcts = new SimpleMCTS(game, timeDue,printLog);
         MOVE nextMove = mcts.runMCTS();
-        if(nextMove == null) {
-            System.err.println("ERROR calculating the next move!");
-        } else {
+        if(nextMove != null) {
             myMove = nextMove;
         }
 
-        System.out.println("Time done: " + Utils.getFormattedTime(System.currentTimeMillis()));
+        if (printLog) {
+            System.out.println("Time done: " + Utils.getFormattedTime(System.currentTimeMillis()));
+            System.out.println("Delta: " + (System.currentTimeMillis()-timeDue) + "ms");
+        }
 
         return myMove;
     }
