@@ -12,6 +12,7 @@ import java.util.Random;
 import pacman.controllers.Controller;
 import pacman.controllers.HumanController;
 import pacman.controllers.examples.RandomGhosts;
+import pacman.controllers.examples.StarterGhosts;
 import pacman.entries.pacman.wiba.WibaPacManBT;
 import pacman.entries.pacman.wiba.WibaPacManMCTS;
 import pacman.game.Game;
@@ -56,7 +57,7 @@ public class Executor
 		//exec.runGameTimed(new NearestPillPacMan(),new AggressiveGhosts(),visual);
 		//exec.runGameTimed(new MyPacMan(),new StarterGhosts(), visual);
 		//exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(),visual);
-		exec.runGameTimed(new WibaPacManMCTS(), new RandomGhosts(), visual);
+		exec.runGameTimed(new WibaPacManMCTS(), new StarterGhosts(), visual);
 		
 		/*
 		//run the game in asynchronous mode but advance as soon as both controllers are ready  - this is the mode of the competition.
