@@ -144,7 +144,7 @@ public class SimpleMCTS {
             }
         }
 
-        return 1.0f - ( simulationGameState.getActivePillsIndices().length/((float)numberOfActivePillsStart));
+        return 1.0f - ( simulationGameState.getNumberOfActivePills()/((float)numberOfActivePillsStart));
     }
 
     private void Backpropagate(MCTSNode selectedNode, float reward) {
