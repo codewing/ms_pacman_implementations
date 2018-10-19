@@ -11,19 +11,23 @@ import java.util.concurrent.TimeUnit;
 
 public class SimpleMCTS {
 
-    private final MCTSNode rootNode;
+    private final MCTSParams params;
 
+    private final MCTSNode rootNode;
     private final Random random = new Random();
     private final StarterGhosts ghostsController = new StarterGhosts();
 
     private final int numberOfActivePillsStart;
-
     private final long timeDue;
-
     boolean printLog;
 
     public SimpleMCTS(Game gameState, long timeDue, boolean printLog) {
-        this.rootNode = new MCTSNode(gameState.copy(), 0);
+        this(new MCTSParams(), gameState, timeDue, printLog);
+    }
+
+    public SimpleMCTS(MCTSParams params, Game gameState, long timeDue, boolean printLog) {
+        this.params = params;
+        this.rootNode = new MCTSNode(params, gameState.copy(), 0);
         this.numberOfActivePillsStart = gameState.getNumberOfActivePills();
         this.timeDue = timeDue;
         this.printLog = printLog;
@@ -88,7 +92,7 @@ public class SimpleMCTS {
         boolean allChildsVisitsAboveMinVisitCount =
                 currentNode.children.parallelStream()
                     .map(c -> c.timesVisited)
-                    .min(Integer::compareTo).get() > MCTSParams.MIN_VISIT_COUNT;
+                    .min(Integer::compareTo).get() > params.MIN_VISIT_COUNT;
 
         if(allChildsVisitsAboveMinVisitCount) {
             return TreePolicy(currentNode.getBestChild());
@@ -98,13 +102,13 @@ public class SimpleMCTS {
     }
 
     MCTSNode expandNode(MCTSNode parentNode) {
-        ArrayList<Constants.MOVE> pacmanMoves = parentNode.getPacmanMovesNotExpanded();
+        ArrayList<Constants.MOVE> pacmanMoves = parentNode.getPacmanMovesNotExpanded(params.MAX_PATH_LENGTH);
         assert !pacmanMoves.isEmpty();
         Constants.MOVE pacmanMove = pacmanMoves.get(random.nextInt(pacmanMoves.size()));
 
-        SimulationResult result = Utils.simulateUntilNextJunction(parentNode.gameState.copy(), ghostsController, pacmanMove);
+        SimulationResult result = Utils.simulateUntilNextJunction(params, parentNode.gameState.copy(), ghostsController, pacmanMove);
 
-        MCTSNode child = new MCTSNode(result.gameState, parentNode.pathLengthInSteps + result.steps);
+        MCTSNode child = new MCTSNode(params, result.gameState, parentNode.pathLengthInSteps + result.steps);
 
         child.parentAction = pacmanMove;
         child.parent = parentNode;
@@ -125,14 +129,14 @@ public class SimpleMCTS {
     private float SimulateGame(MCTSNode selectedNode) {
 
         Game simulationGameState = selectedNode.gameState.copy();
-        int remainingSteps = MCTSParams.MAX_PATH_LENGTH - selectedNode.pathLengthInSteps;
+        int remainingSteps = params.MAX_PATH_LENGTH - selectedNode.pathLengthInSteps;
         SimulationResult lastSimulationResult;
 
         while(remainingSteps > 0) {
             ArrayList<Constants.MOVE> availableMoves = Utils.getPacmanMovesAtJunctionWithoutReverse(simulationGameState);
             Constants.MOVE pacmanMove = availableMoves.get(random.nextInt(availableMoves.size()));
 
-            lastSimulationResult = Utils.simulateToNextJunctionOrLimit(simulationGameState, ghostsController, pacmanMove, remainingSteps);
+            lastSimulationResult = Utils.simulateToNextJunctionOrLimit(params, simulationGameState, ghostsController, pacmanMove, remainingSteps);
 
             remainingSteps -= lastSimulationResult.steps;
             if(lastSimulationResult.diedDuringSimulation) {

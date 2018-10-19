@@ -29,20 +29,20 @@ public abstract class Utils {
         return pacmanMoves;
     }
 
-    public static SimulationResult simulateUntilNextJunction(Game gameState, Controller<EnumMap<Constants.GHOST,Constants.MOVE>> ghostController, Constants.MOVE direction) {
-        SimulationResult result = simulateToNextJunctionOrLimit(gameState, ghostController, direction, Integer.MAX_VALUE);
+    public static SimulationResult simulateUntilNextJunction(MCTSParams params, Game gameState, Controller<EnumMap<Constants.GHOST,Constants.MOVE>> ghostController, Constants.MOVE direction) {
+        SimulationResult result = simulateToNextJunctionOrLimit(params, gameState, ghostController, direction, Integer.MAX_VALUE);
 
         return result;
     }
 
-    public static SimulationResult simulateToNextJunctionOrLimit(Game gameState, Controller<EnumMap<Constants.GHOST,Constants.MOVE>> ghostController, Constants.MOVE direction, int maxSteps) {
+    public static SimulationResult simulateToNextJunctionOrLimit(MCTSParams params, Game gameState, Controller<EnumMap<Constants.GHOST,Constants.MOVE>> ghostController, Constants.MOVE direction, int maxSteps) {
         SimulationResult result = new SimulationResult();
 
         Constants.MOVE currentPacmanDirection = direction;
         do {
             currentPacmanDirection = getPacmanMoveAlongPath(gameState, currentPacmanDirection);
 
-            gameState.advanceGame(currentPacmanDirection, ghostController.getMove(gameState, System.currentTimeMillis() + MCTSParams.ghostSimulationTimeMS));
+            gameState.advanceGame(currentPacmanDirection, ghostController.getMove(gameState, System.currentTimeMillis() + params.ghostSimulationTimeMS));
 
             // update stats
             result.steps++;

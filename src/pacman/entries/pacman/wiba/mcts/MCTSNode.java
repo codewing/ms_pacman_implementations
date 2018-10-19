@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 public class MCTSNode {
 
+    final MCTSParams params;
     final Game gameState;
     final int pathLengthInSteps;
 
@@ -22,7 +23,8 @@ public class MCTSNode {
     int timesVisited = 0;
 
 
-    MCTSNode(Game gameState, int pathLengthInSteps){
+    MCTSNode(MCTSParams params, Game gameState, int pathLengthInSteps){
+        this.params = params;
         this.gameState = gameState;
         this.pathLengthInSteps = pathLengthInSteps;
     }
@@ -35,13 +37,13 @@ public class MCTSNode {
 
     double getUCTValue() {
         double exploitation = getReward() / timesVisited;
-        double exploration = MCTSParams.explorationCoefficient * Math.sqrt( Math.log(parent.timesVisited) / timesVisited);
+        double exploration = params.explorationCoefficient * Math.sqrt( Math.log(parent.timesVisited) / timesVisited);
 
         return exploitation + exploration;
     }
 
     public boolean isFullyExpanded() {
-        ArrayList<Constants.MOVE> moves = getPacmanMovesNotExpanded();
+        ArrayList<Constants.MOVE> moves = getPacmanMovesNotExpanded(params.MAX_PATH_LENGTH);
 
         return moves.isEmpty();
     }
@@ -56,9 +58,9 @@ public class MCTSNode {
         return moves;
     }
 
-    public ArrayList<Constants.MOVE> getPacmanMovesNotExpanded() {
+    public ArrayList<Constants.MOVE> getPacmanMovesNotExpanded(final int MAX_PATH_LENGTH) {
         // check if enough simulation steps would be made
-        if(pathLengthInSteps > 0.8f * MCTSParams.MAX_PATH_LENGTH) {
+        if(pathLengthInSteps > 0.8f * MAX_PATH_LENGTH) {
             return new ArrayList<>();
         } else {
             ArrayList<Constants.MOVE> moves = getPacmanMovesWithoutReverse();
