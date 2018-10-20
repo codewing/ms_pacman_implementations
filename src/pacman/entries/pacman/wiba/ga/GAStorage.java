@@ -10,8 +10,8 @@ import java.util.Comparator;
 
 public class GAStorage {
 
-    private static final String header = "Fitness;MAX_PATH_LENGTH;explorationCoefficient;ghostSimulationTimeMS;MIN_VISIT_COUNT";
-    private static final String genomeCSVFormat = "%f;%d;%f;%d;%d\n";
+    private static final String header = "Fitness;MAX_PATH_LENGTH;explorationCoefficient;ghostSimulationTimeMS;MIN_VISIT_COUNT\n";
+    private static final String genomeCSVFormat = "%d;%d;%f;%d;%d\n";
 
     public static void saveGenomeCSV(String filename, ArrayList<Genome> genomes) {
         StringBuilder sb = new StringBuilder();
@@ -43,7 +43,7 @@ public class GAStorage {
         MCTSParams chromosome = genome.getChromosome();
 
         return String.format(genomeCSVFormat,
-                                genome.getFitness(),
+                                (int)genome.getFitness(),
                                 chromosome.MAX_PATH_LENGTH,
                                 chromosome.explorationCoefficient,
                                 chromosome.ghostSimulationTimeMS,
@@ -61,7 +61,7 @@ public class GAStorage {
         MCTSParams params = new MCTSParams(maxPathLength, explorationCoefficient, minVisitCount, ghostSimulationTimeMS);
 
         Genome g = new Genome(params);
-        g.setFitness(Float.parseFloat(split[0].replaceAll(",",".")));
+        g.setFitness(Integer.parseInt(split[0]));
 
         return g;
     }

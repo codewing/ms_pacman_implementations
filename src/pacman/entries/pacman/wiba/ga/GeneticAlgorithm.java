@@ -4,7 +4,6 @@ import pacman.controllers.Controller;
 import pacman.controllers.examples.StarterGhosts;
 import pacman.entries.pacman.wiba.WibaPacmanGA;
 import pacman.entries.pacman.wiba.mcts.MCTSParams;
-import pacman.entries.pacman.wiba.utils.Utils;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -17,8 +16,9 @@ public class GeneticAlgorithm {
     private ExecutorService gameExecutor;
 
     static int NUMBER_OF_GENERATIONS = 10;
-    static int RUNS_PER_GENOME_FOR_AVG = 5;
-    static int POPULATION_SIZE = 10;
+    static int RUNS_PER_GENOME_FOR_AVG = 2;
+    static int POPULATION_SIZE = 100;
+
     private ArrayList<Genome> population = new ArrayList<>();
     private Class<? extends Controller<EnumMap<pacman.game.Constants.GHOST, pacman.game.Constants.MOVE>>> ghostControllerClass = StarterGhosts.class;
 
@@ -32,15 +32,15 @@ public class GeneticAlgorithm {
         random = new Random();
         gameExecutor = Executors.newFixedThreadPool(numberOfThreads);
 
-        if(fileToLoadFrom.isEmpty()) {
-            for (int i = 0; i < POPULATION_SIZE; i++) {
-                Genome individual = new Genome();
-                individual.randomizeChromosome();
-
-                population.add(individual);
-            }
-        } else {
+        if(!fileToLoadFrom.isEmpty()) {
             population.addAll(GAStorage.loadGenomeCSV(fileToLoadFrom));
+        }
+
+        for (int i = population.size(); i < POPULATION_SIZE; i++) {
+            Genome individual = new Genome();
+            individual.randomizeChromosome();
+
+            population.add(individual);
         }
 
     }
@@ -131,7 +131,7 @@ public class GeneticAlgorithm {
     public void replacement(ArrayList<Genome> offspringList) {
         Collections.sort(population);
 
-        while(population.size() + offspringList.size() > POPULATION_SIZE) {
+        for(int i = 0; i < offspringList.size(); i++) {
             population.remove(population.size()-1);
         }
 
@@ -157,6 +157,7 @@ public class GeneticAlgorithm {
         }
 
         System.out.println("\nENDING GENERATION: " + current_generation + "\n");
+        GAStorage.saveGenomeCSV("final_generation", population);
         System.out.println("Statistics:");
         generateStatistics(true);
     }
