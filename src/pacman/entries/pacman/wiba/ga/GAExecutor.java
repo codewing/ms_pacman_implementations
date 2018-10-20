@@ -7,7 +7,7 @@ public abstract class GAExecutor
     {
         int numberOfThreads = Runtime.getRuntime().availableProcessors();
 
-        GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(numberOfThreads);
+        GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(numberOfThreads, "");
         geneticAlgorithm.startEvolution();
 
         System.out.println(geneticAlgorithm.getChampion().toString());

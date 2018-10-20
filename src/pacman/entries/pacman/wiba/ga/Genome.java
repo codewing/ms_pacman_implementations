@@ -7,10 +7,10 @@ import java.util.Random;
 public class Genome implements Comparable<Genome> {
 
     // sensible value range
-    private static int MAX_MAX_PATH_LENGTH = 10000;
-    private static double MAX_EXPLORATION_COEFFICIENT = 20.0d;
-    private static int MAX_MIN_VISIT_COUNT = 1000;
-    private static int MAX_GHOST_SIMULATION_COUNT_MS = 30;
+    private static int MAX_MAX_PATH_LENGTH = 980;
+    private static double MAX_EXPLORATION_COEFFICIENT = 1.9d;
+    private static int MAX_MIN_VISIT_COUNT = 499;
+    private static int MAX_GHOST_SIMULATION_COUNT_MS = 9;
 
     public static int CHROMOSOME_COUNT = 4;
 
@@ -29,10 +29,10 @@ public class Genome implements Comparable<Genome> {
     }
 
     public void randomizeChromosome() {
-        int maxPathLength = random.nextInt(MAX_MAX_PATH_LENGTH);
-        double explorationCoefficient = random.nextDouble() * MAX_EXPLORATION_COEFFICIENT;
-        int minVisitCount = random.nextInt(MAX_MIN_VISIT_COUNT);
-        int ghostSimulationCountMS = random.nextInt(MAX_GHOST_SIMULATION_COUNT_MS);
+        int maxPathLength = 20 + random.nextInt(MAX_MAX_PATH_LENGTH);
+        double explorationCoefficient = 0.1d + random.nextDouble() * MAX_EXPLORATION_COEFFICIENT;
+        int minVisitCount = 1 + random.nextInt(MAX_MIN_VISIT_COUNT);
+        int ghostSimulationCountMS = 1 + random.nextInt(MAX_GHOST_SIMULATION_COUNT_MS);
 
         chromosome = new MCTSParams(maxPathLength, explorationCoefficient, minVisitCount, ghostSimulationCountMS);
     }

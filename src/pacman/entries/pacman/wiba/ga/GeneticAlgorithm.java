@@ -141,6 +141,8 @@ public class GeneticAlgorithm {
     public void startEvolution() {
         int current_generation = 0;
 
+        GAStorage.saveGenomeCSV("generation_-1", population);
+
         while (evaluatePopulation(current_generation)) {
             System.out.println("////////////////////////");
             System.out.println("//// Generation: " + current_generation + " ////");
