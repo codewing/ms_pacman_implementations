@@ -143,7 +143,7 @@ public class SimpleMCTS {
             if(lastSimulationResult.diedDuringSimulation) {
                 return 0;
             } else if(lastSimulationResult.levelComplete) {
-                return 1 * (remainingSteps/(float)params.MAX_PATH_LENGTH);
+                return 1;
             }
         }
 
