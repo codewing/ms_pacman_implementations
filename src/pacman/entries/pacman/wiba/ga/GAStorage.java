@@ -4,13 +4,17 @@ import pacman.entries.pacman.wiba.mcts.MCTSParams;
 import pacman.game.util.IO;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class GAStorage {
 
+    private static final String header = "Fitness;MAX_PATH_LENGTH;explorationCoefficient;ghostSimulationTimeMS;MIN_VISIT_COUNT";
     private static final String genomeCSVFormat = "%f;%d;%f;%d;%d\n";
 
     public static void saveGenomeCSV(String filename, ArrayList<Genome> genomes) {
         StringBuilder sb = new StringBuilder();
+        sb.append(header);
+
         for(Genome genome : genomes) {
             sb.append(toCSVString(genome));
         }
@@ -20,9 +24,11 @@ public class GAStorage {
 
     public static ArrayList<Genome> loadGenomeCSV (String filename) {
         String fileContent = IO.loadFile(filename);
+        ArrayList<String> parsedContent = new ArrayList<>(Arrays.asList(fileContent.split("\n")));
+        parsedContent.remove(0); // removes the header
 
         ArrayList<Genome> genomes = new ArrayList<>();
-        for(String line : fileContent.split("\n")) {
+        for(String line : parsedContent) {
             genomes.add(fromCSVString(line));
         }
 
