@@ -2,6 +2,7 @@ package pacman.entries.pacman.wiba.ga;
 
 import pacman.controllers.Controller;
 import pacman.controllers.examples.StarterGhosts;
+import pacman.entries.pacman.wiba.WibaPacmanGA;
 import pacman.entries.pacman.wiba.mcts.MCTSParams;
 import pacman.game.Constants;
 import pacman.game.Game;

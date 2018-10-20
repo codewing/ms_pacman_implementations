@@ -2,11 +2,15 @@
 
 This project implements controllers using a very simple Behavior Tree, Monte Carlo Tree Search and a Genetic Algorithm evolving the hyperparameters of the MCTS implementation.
 
+You can find my implementations in ```src/pacman/entries/pacman/wiba```
+
 ## Implementation and Evaluation Notes
 
 ### Behavior Trees
 
 #### First Algorithm - Behavior Tree
+
+__Controller:__ ```WibaPacManBT```
 
 The tree:
 
@@ -26,6 +30,8 @@ The tree:
 
 #### Second Algorithm - Monte Carlo Tree Search
 
+__Controller:__ ```WibaPacManMCTS```
+
 - This implementation of an MCTS tree used the following approach:
     - Instead of single steps the nodes of the algorithm were the intersections of the tree
     - An edge connecting two intersections is represented as an action (e.g. MOVE.RIGHT)
@@ -36,3 +42,11 @@ The tree:
 Problems:
 - One problem which needs to be addressed is that due to the fact that the distance was limited pacman had trouble finding pills that not in the simulation distance in the end.
 - Another problem is that small groups between intersections were left out because the reward was higher to ignore them but go a little bit further for the bigger group.
+
+#### Third Algorithm: Genetic Algorithm
+
+__Controller:__ ```WibaPacManGA```
+
+The genetic algorithm uses the class ```MCTSParams``` as chromosome and simulates multiple iterations of the game to calculate the fitness value for a particular parameter instance.
+
+If you want to use a set of parameters that proved to be good choice you can do so by creating an instance of the ```WibaPacmanGA``` controller and pass the parameter object to the controller in the constructor

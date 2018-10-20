@@ -1,4 +1,4 @@
-package pacman.entries.pacman.wiba.ga;
+package pacman.entries.pacman.wiba;
 
 import pacman.controllers.Controller;
 import pacman.entries.pacman.wiba.mcts.MCTSParams;
