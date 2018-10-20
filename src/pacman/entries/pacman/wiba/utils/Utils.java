@@ -47,15 +47,36 @@ public abstract class Utils {
             // update stats
             result.steps++;
             maxSteps--;
-            if(gameState.wasPacManEaten()) {
-                result.diedDuringSimulation = true;
-                break;
-            }
+
+            if(analyzeGameState(gameState, result)) break;
+
         } while(!gameState.isJunction(gameState.getPacmanCurrentNodeIndex()) && maxSteps > 0);
 
         result.gameState = gameState;
 
         return result;
+    }
+
+    /**
+     * Analyzes the game state and sets the variables in the simulation result accordingly
+     * @param gameState
+     * @param result
+     * @return exit the simulation loop?
+     */
+    public static boolean analyzeGameState(Game gameState, SimulationResult result) {
+        boolean shouldBreak = false;
+
+        if(gameState.getNumberOfActivePills() == 0) {
+            result.levelComplete = true;
+            shouldBreak = true;
+        }
+
+        if(gameState.wasPacManEaten()) {
+            result.diedDuringSimulation = true;
+            shouldBreak = true;
+        }
+
+        return shouldBreak;
     }
 
     public static ArrayList<Constants.MOVE> getPacmanMovesAtJunctionWithoutReverse(Game gameState) {

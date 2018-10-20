@@ -129,7 +129,8 @@ public class SimpleMCTS {
     private float SimulateGame(MCTSNode selectedNode) {
 
         Game simulationGameState = selectedNode.gameState.copy();
-        int remainingSteps = params.MAX_PATH_LENGTH - selectedNode.pathLengthInSteps;
+        int totalSteps = params.MAX_PATH_LENGTH - selectedNode.pathLengthInSteps;
+        int remainingSteps = totalSteps;
         SimulationResult lastSimulationResult;
 
         while(remainingSteps > 0) {
@@ -141,10 +142,12 @@ public class SimpleMCTS {
             remainingSteps -= lastSimulationResult.steps;
             if(lastSimulationResult.diedDuringSimulation) {
                 return 0;
+            } else if(lastSimulationResult.levelComplete) {
+                return 1 * (remainingSteps/(float)params.MAX_PATH_LENGTH);
             }
         }
 
-        return 1.0f - ( simulationGameState.getNumberOfActivePills()/((float)numberOfActivePillsStart));
+        return 1.0f - ( simulationGameState.getNumberOfActivePills() / ((float)numberOfActivePillsStart));
     }
 
     private void Backpropagate(MCTSNode selectedNode, float reward) {

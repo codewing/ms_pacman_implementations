@@ -88,7 +88,7 @@ public class MCTSNode {
     }
 
     public boolean isGameOver() {
-        return gameState.wasPacManEaten() || gameState.getActivePillsIndices().length == 0;
+        return gameState.wasPacManEaten() || gameState.getNumberOfActivePills() == 0;
     }
 
     public boolean isPacmanAtJunction() {

@@ -5,5 +5,6 @@ import pacman.game.Game;
 public class SimulationResult {
     public int steps = 0;
     public boolean diedDuringSimulation = false;
+    public boolean levelComplete = false;
     public Game gameState;
 }

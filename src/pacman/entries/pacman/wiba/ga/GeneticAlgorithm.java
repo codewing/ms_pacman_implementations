@@ -17,7 +17,8 @@ public class GeneticAlgorithm {
 
     private Random random;
 
-    static int EVALUATION_RUNS = 5;
+    static int NUMBER_OF_GENERATIONS = 10;
+    static int RUNS_PER_GENOME_FOR_AVG = 5;
     static int POPULATION_SIZE = 10;
     private ArrayList<Genome> population = new ArrayList<>();
     private Controller<EnumMap<Constants.GHOST, Constants.MOVE>> ghosts = new StarterGhosts();
@@ -148,14 +149,13 @@ public class GeneticAlgorithm {
     }
 
     public boolean evaluatePopulation(int currentIteration) {
-        boolean keepIterating = true;
         for (Genome individual : population) {
             // evaluate fitness of an individual
-            float fitness = evaluateGenome(new WibaPacmanGA(individual.getChromosome()), ghosts, EVALUATION_RUNS);
+            float fitness = evaluateGenome(new WibaPacmanGA(individual.getChromosome()), ghosts, RUNS_PER_GENOME_FOR_AVG);
             individual.setFitness(fitness);
         }
 
-        return currentIteration < 10;
+        return currentIteration < NUMBER_OF_GENERATIONS;
     }
 
     private float evaluateGenome(Controller<Constants.MOVE> pacManController, Controller<EnumMap<Constants.GHOST,Constants.MOVE>> ghostController, int trials)
