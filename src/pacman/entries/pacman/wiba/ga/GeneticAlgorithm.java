@@ -4,15 +4,11 @@ import pacman.controllers.Controller;
 import pacman.controllers.examples.StarterGhosts;
 import pacman.entries.pacman.wiba.WibaPacmanGA;
 import pacman.entries.pacman.wiba.mcts.MCTSParams;
-import pacman.game.Constants;
-import pacman.game.Game;
 
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import static pacman.game.Constants.DELAY;
 
 public class GeneticAlgorithm {
 
