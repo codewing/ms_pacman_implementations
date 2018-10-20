@@ -5,6 +5,8 @@ import pacman.game.util.IO;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class GAStorage {
 
@@ -14,6 +16,8 @@ public class GAStorage {
     public static void saveGenomeCSV(String filename, ArrayList<Genome> genomes) {
         StringBuilder sb = new StringBuilder();
         sb.append(header);
+
+        Collections.sort(genomes, Comparator.comparingDouble(Genome::getFitness));
 
         for(Genome genome : genomes) {
             sb.append(toCSVString(genome));
