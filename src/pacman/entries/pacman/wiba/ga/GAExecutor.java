@@ -5,10 +5,11 @@ public abstract class GAExecutor
 
     public static void main(String[] args)
     {
-        GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm();
+        int numberOfThreads = Runtime.getRuntime().availableProcessors();
+
+        GeneticAlgorithm geneticAlgorithm = new GeneticAlgorithm(numberOfThreads);
         geneticAlgorithm.startEvolution();
 
         System.out.println(geneticAlgorithm.getChampion().toString());
-
     }
 }

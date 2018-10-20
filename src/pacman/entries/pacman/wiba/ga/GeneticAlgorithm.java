@@ -7,27 +7,29 @@ import pacman.entries.pacman.wiba.mcts.MCTSParams;
 import pacman.game.Constants;
 import pacman.game.Game;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static pacman.game.Constants.DELAY;
 
 public class GeneticAlgorithm {
 
     private Random random;
+    private ExecutorService gameExecutor;
 
     static int NUMBER_OF_GENERATIONS = 10;
     static int RUNS_PER_GENOME_FOR_AVG = 5;
     static int POPULATION_SIZE = 10;
     private ArrayList<Genome> population = new ArrayList<>();
-    private Controller<EnumMap<Constants.GHOST, Constants.MOVE>> ghosts = new StarterGhosts();
+    private Class<? extends Controller<EnumMap<pacman.game.Constants.GHOST, pacman.game.Constants.MOVE>>> ghostControllerClass = StarterGhosts.class;
 
     private Genome champion;
 
-    public GeneticAlgorithm() {
+    public GeneticAlgorithm(int numberOfThreads) {
         random = new Random();
+        gameExecutor = Executors.newFixedThreadPool(numberOfThreads);
 
         for (int i = 0; i < POPULATION_SIZE; i++) {
             Genome individual = new Genome();
@@ -150,36 +152,25 @@ public class GeneticAlgorithm {
     }
 
     public boolean evaluatePopulation(int currentIteration) {
+
+        ArrayList<Callable<Void>> evaluationTasks = new ArrayList<>();
+
         for (Genome individual : population) {
-            // evaluate fitness of an individual
-            float fitness = evaluateGenome(new WibaPacmanGA(individual.getChromosome()), ghosts, RUNS_PER_GENOME_FOR_AVG);
-            individual.setFitness(fitness);
+            // add all evaluation tasks
+            evaluationTasks.add(new GenomeEvaluator(individual, new WibaPacmanGA(individual.getChromosome()), ghostControllerClass, RUNS_PER_GENOME_FOR_AVG));
+        }
+
+        try {
+            // execute and wait for them to finish
+            gameExecutor.invokeAll(evaluationTasks);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return currentIteration < NUMBER_OF_GENERATIONS;
     }
 
-    private float evaluateGenome(Controller<Constants.MOVE> pacManController, Controller<EnumMap<Constants.GHOST,Constants.MOVE>> ghostController, int trials)
-    {
-        float totalScore = 0;
 
-        Random rnd=new Random(0);
-        Game game;
-
-        for(int i = 0; i<trials; i++)
-        {
-            game = new Game(rnd.nextLong());
-
-            while(!game.gameOver()) {
-                game.advanceGame(pacManController.getMove(game.copy(),System.currentTimeMillis()+DELAY),
-                        ghostController.getMove(game.copy(),System.currentTimeMillis()+DELAY));
-            }
-
-            totalScore += game.getScore();
-        }
-
-        return totalScore/trials;
-    }
 
     public void generateStatistics(boolean print) {
         float avgFitness = 0.f;
