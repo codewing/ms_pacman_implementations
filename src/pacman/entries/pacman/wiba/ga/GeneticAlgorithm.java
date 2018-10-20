@@ -4,6 +4,7 @@ import pacman.controllers.Controller;
 import pacman.controllers.examples.StarterGhosts;
 import pacman.entries.pacman.wiba.WibaPacmanGA;
 import pacman.entries.pacman.wiba.mcts.MCTSParams;
+import pacman.entries.pacman.wiba.utils.Utils;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -24,15 +25,24 @@ public class GeneticAlgorithm {
     private Genome champion;
 
     public GeneticAlgorithm(int numberOfThreads) {
+        this(numberOfThreads, "");
+    }
+
+    public GeneticAlgorithm(int numberOfThreads, String fileToLoadFrom) {
         random = new Random();
         gameExecutor = Executors.newFixedThreadPool(numberOfThreads);
 
-        for (int i = 0; i < POPULATION_SIZE; i++) {
-            Genome individual = new Genome();
-            individual.randomizeChromosome();
+        if(fileToLoadFrom.isEmpty()) {
+            for (int i = 0; i < POPULATION_SIZE; i++) {
+                Genome individual = new Genome();
+                individual.randomizeChromosome();
 
-            population.add(individual);
+                population.add(individual);
+            }
+        } else {
+            population.addAll(GAStorage.loadGenomeCSV(fileToLoadFrom));
         }
+
     }
 
     public boolean shouldMutate(Genome individual) {
@@ -135,6 +145,8 @@ public class GeneticAlgorithm {
             System.out.println("////////////////////////");
             System.out.println("//// Generation: " + current_generation + " ////");
             System.out.println("////////////////////////");
+
+            GAStorage.saveGenomeCSV("generation_"+current_generation, population);
 
             generateStatistics(true);
             reproducePopulation();
