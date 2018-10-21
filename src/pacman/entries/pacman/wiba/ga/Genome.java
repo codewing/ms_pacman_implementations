@@ -41,25 +41,25 @@ public class Genome implements Comparable<Genome> {
         int attributeToMutate = random.nextInt(CHROMOSOME_COUNT);
 
         int maxPathLength = 0;
-        double explorationCoefficient = 0;
+        double explorationCoefficient = 0.0;
         int minVisitCount = 0;
         int ghostSimulationCountMS = 0;
 
         switch (attributeToMutate) {
             case 0:{
-                maxPathLength = random.nextInt();
+                maxPathLength = 20 + random.nextInt(MAX_MAX_PATH_LENGTH);
             }break;
             case 1:{
-                explorationCoefficient = random.nextDouble() * Double.MAX_VALUE;
+                explorationCoefficient = 0.1d + random.nextDouble() * MAX_EXPLORATION_COEFFICIENT;
             }break;
             case 2:{
-                minVisitCount = random.nextInt();
+                minVisitCount = 1 + random.nextInt(MAX_MIN_VISIT_COUNT);
             }break;
             case 3:{
-                ghostSimulationCountMS = random.nextInt();
+                ghostSimulationCountMS = 1 + random.nextInt(MAX_GHOST_SIMULATION_COUNT_MS);
             }break;
         }
-        chromosome = modifyMCTSParams(chromosome, maxPathLength, explorationCoefficient, minVisitCount, ghostSimulationCountMS);
+        chromosome = updateChromosome(chromosome, maxPathLength, explorationCoefficient, minVisitCount, ghostSimulationCountMS);
     }
 
     public float getFitness() {
@@ -75,12 +75,12 @@ public class Genome implements Comparable<Genome> {
         return (int) ((other.getFitness() - this.getFitness()));
     }
 
-    public static MCTSParams modifyMCTSParams(MCTSParams params, int diffPathLength, double diffExplCoeff, int diffMinVisCount, int diffGhostSimTime) {
+    public static MCTSParams updateChromosome(MCTSParams oldChromosome, int newPathLength, double newExplCoeff, int newMinVisCount, int newGhostSimTime) {
         return new MCTSParams(
-                (params.MAX_PATH_LENGTH + diffPathLength) % MAX_MAX_PATH_LENGTH,
-                (params.explorationCoefficient + diffExplCoeff) % MAX_EXPLORATION_COEFFICIENT,
-                (params.MIN_VISIT_COUNT + diffMinVisCount) % MAX_MIN_VISIT_COUNT,
-                (params.ghostSimulationTimeMS + diffGhostSimTime) % MAX_GHOST_SIMULATION_COUNT_MS
+                newPathLength == 0   ? oldChromosome.MAX_PATH_LENGTH : newPathLength,
+                newExplCoeff == 0.0  ? oldChromosome.explorationCoefficient :  newExplCoeff,
+                newMinVisCount == 0  ? oldChromosome.MIN_VISIT_COUNT : newMinVisCount,
+                newGhostSimTime == 0 ? oldChromosome.ghostSimulationTimeMS: newGhostSimTime
         );
     }
 
