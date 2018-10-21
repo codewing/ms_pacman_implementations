@@ -72,7 +72,7 @@ public class Genome implements Comparable<Genome> {
 
     @Override
     public int compareTo(Genome other) {
-        return (int) ((other.getFitness() - this.getFitness()) * 1000000000);
+        return (int) ((other.getFitness() - this.getFitness()));
     }
 
     public static MCTSParams modifyMCTSParams(MCTSParams params, int diffPathLength, double diffExplCoeff, int diffMinVisCount, int diffGhostSimTime) {
