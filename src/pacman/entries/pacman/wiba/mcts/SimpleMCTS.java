@@ -57,7 +57,7 @@ public class SimpleMCTS {
 
         if (printLog) System.out.println(rootNode);
 
-        Optional<MCTSNode> bestNode = rootNode.children.stream().max(Comparator.comparingInt(n -> n.timesVisited));
+        Optional<MCTSNode> bestNode = rootNode.children.stream().max(Comparator.comparingInt(MCTSNode::getTimesVisited));
         if(bestNode.isPresent()) {
             return bestNode.get().parentAction;
         }
@@ -93,7 +93,7 @@ public class SimpleMCTS {
         // randomize selection if visit count of one child < min visit count
         boolean allChildsVisitsAboveMinVisitCount =
                 currentNode.children.parallelStream()
-                    .map(c -> c.timesVisited)
+                    .map(MCTSNode::getTimesVisited)
                     .min(Integer::compareTo).get() > params.MIN_VISIT_COUNT;
 
         if(allChildsVisitsAboveMinVisitCount) {
@@ -117,10 +117,10 @@ public class SimpleMCTS {
 
         parentNode.children.add(child);
 
-        if(result.diedDuringSimulation) {
+        if(result.diedDuringSimulation || result.powerPillEatenButActive) {
             // make sure this node doesn't get simulated but simulate the parent
-            child.reward = -1;
-            child.timesVisited = 1;
+            child.updateReward(-1);
+            child.setCanUpdate(false);
 
             return parentNode;
         }
@@ -134,7 +134,7 @@ public class SimpleMCTS {
         int remainingSteps = totalSteps;
         SimulationResult lastSimulationResult = new SimulationResult();
 
-        while(!Utils.analyzeGameState(simulationGameState, lastSimulationResult, remainingSteps)) {
+        while(!Utils.analyzeGameState(simulationGameState, lastSimulationResult, remainingSteps, lastSimulationResult.powerPillEatenButActive)) {
             ArrayList<Constants.MOVE> availableMoves = Utils.getPacmanMovesAtJunctionWithoutReverse(simulationGameState);
             Constants.MOVE pacmanMove = availableMoves.get(random.nextInt(availableMoves.size()));
 
@@ -143,22 +143,20 @@ public class SimpleMCTS {
             remainingSteps -= lastSimulationResult.steps;
         }
 
-        if(lastSimulationResult.diedDuringSimulation || lastSimulationResult.powerPillEatenButActive) {
-            return 0;
-        } else if(lastSimulationResult.levelComplete) {
+        if(lastSimulationResult.levelComplete) {
             return 1;
         }
 
-        float collectedPillsReward = 1.0f - ( simulationGameState.getNumberOfActivePills() / ((float)numberOfActivePillsStart));
-        float halfAPillForSurviving = 0.5f * (1.0f/numberOfActivePillsStart);
+        if(lastSimulationResult.diedDuringSimulation || lastSimulationResult.powerPillEatenButActive) {
+            return 0;
+        }
 
-        return Math.max(collectedPillsReward, halfAPillForSurviving); //either collected pills or half a pill for surviving
+        return 1.0f - ( simulationGameState.getNumberOfActivePills() / ((float)numberOfActivePillsStart));
     }
 
     private void Backpropagate(MCTSNode selectedNode, float reward) {
         while (selectedNode != null) {
-            selectedNode.timesVisited++;
-            selectedNode.reward += reward;
+            selectedNode.updateReward(reward);
             selectedNode = selectedNode.parent;
         }
     }

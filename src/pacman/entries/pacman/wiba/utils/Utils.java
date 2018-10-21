@@ -39,16 +39,18 @@ public abstract class Utils {
         SimulationResult result = new SimulationResult();
 
         Constants.MOVE currentPacmanDirection = direction;
+        boolean hadEdibleGhost;
         do {
             currentPacmanDirection = getPacmanMoveAlongPath(gameState, currentPacmanDirection);
 
+            hadEdibleGhost = hasEdibleGhost(gameState);
             gameState.advanceGame(currentPacmanDirection, ghostController.getMove(gameState, System.currentTimeMillis() + params.ghostSimulationTimeMS));
 
             // update stats
             result.steps++;
             maxSteps--;
 
-        } while(!analyzeGameState(gameState, result, maxSteps) && !gameState.isJunction(gameState.getPacmanCurrentNodeIndex()));
+        } while(!analyzeGameState(gameState, result, maxSteps, hadEdibleGhost) && !gameState.isJunction(gameState.getPacmanCurrentNodeIndex()));
 
         result.gameState = gameState;
 
@@ -61,7 +63,7 @@ public abstract class Utils {
      * @param result
      * @return exit the simulation loop?
      */
-    public static boolean analyzeGameState(Game gameState, SimulationResult result, int remainingSteps) {
+    public static boolean analyzeGameState(Game gameState, SimulationResult result, int remainingSteps, boolean hadEdibleGhost) {
         boolean shouldStop = false;
 
         if(gameState.getNumberOfActivePills() == 0) {
@@ -74,7 +76,7 @@ public abstract class Utils {
             shouldStop = true;
         }
 
-        if(gameState.wasPowerPillEaten() && hasEdibleGhost(gameState)) {
+        if(gameState.wasPowerPillEaten() && hadEdibleGhost) {
             result.powerPillEatenButActive = true;
             shouldStop = true;
         }

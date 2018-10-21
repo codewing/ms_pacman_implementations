@@ -19,8 +19,10 @@ public class MCTSNode {
     Constants.MOVE parentAction = null;
     List<MCTSNode> children = new ArrayList<>();
 
-    double reward = 0;
-    int timesVisited = 0;
+    private double reward = 0;
+    private int timesVisited = 0;
+
+    private boolean canUpdate = true;
 
 
     MCTSNode(MCTSParams params, Game gameState, int pathLengthInSteps){
@@ -84,15 +86,31 @@ public class MCTSNode {
             }
         }
 
+        if(bestChild == null) {
+            // panic
+            return children.get(0);
+        }
+
         return bestChild;
+    }
+
+    public int getTimesVisited() {
+        return timesVisited;
     }
 
     public boolean isGameOver() {
         return gameState.wasPacManEaten() || gameState.getNumberOfActivePills() == 0;
     }
 
-    public boolean isPacmanAtJunction() {
-        return gameState.isJunction(gameState.getPacmanCurrentNodeIndex());
+    public void updateReward(float deltaReward) {
+        if(canUpdate) {
+            reward += deltaReward;
+            timesVisited++;
+        }
+    }
+
+    public void setCanUpdate(boolean canUpdate) {
+        this.canUpdate = canUpdate;
     }
 
     public String path() {
