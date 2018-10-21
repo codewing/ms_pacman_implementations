@@ -127,6 +127,7 @@ public class SimpleMCTS {
     }
 
     private float SimulateGame(MCTSNode selectedNode) {
+        if(selectedNode.gameState.getNumberOfActivePills() == 0) return 1.0f;
 
         Game simulationGameState = selectedNode.gameState.copy();
         int totalSteps = params.MAX_PATH_LENGTH - selectedNode.pathLengthInSteps;
@@ -147,14 +148,13 @@ public class SimpleMCTS {
             }
         }
 
-        return 1.0f - ( simulationGameState.getNumberOfActivePills() / ((float)numberOfActivePillsStart));
+        float collectedPillsReward = 1.0f - ( simulationGameState.getNumberOfActivePills() / ((float)numberOfActivePillsStart));
+        float halfAPillForSurviving = 0.5f * (1.0f/numberOfActivePillsStart);
+
+        return Math.max(collectedPillsReward, halfAPillForSurviving); //either collected pills or half a pill for surviving
     }
 
     private void Backpropagate(MCTSNode selectedNode, float reward) {
-        selectedNode.reward = Math.max(reward, (float)selectedNode.getReward());
-        selectedNode.timesVisited++;
-        selectedNode = selectedNode.parent;
-
         while (selectedNode != null) {
             selectedNode.timesVisited++;
             selectedNode.reward += reward;
