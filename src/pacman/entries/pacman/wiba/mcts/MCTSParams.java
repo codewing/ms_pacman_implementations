@@ -8,10 +8,10 @@ public class MCTSParams {
     public final int ghostSimulationTimeMS;
 
     public MCTSParams() {
-        MAX_PATH_LENGTH = 120;
+        MAX_PATH_LENGTH = 140;
         explorationCoefficient = 1.0/Math.sqrt(2);
-        MIN_VISIT_COUNT = 5;
-        ghostSimulationTimeMS = 5;
+        MIN_VISIT_COUNT = 20;
+        ghostSimulationTimeMS = 8;
     }
 
     public MCTSParams(int MAX_PATH_LENGTH, double explorationCoefficient, int MIN_VISIT_COUNT, int ghostSimulationTimeMS) {
