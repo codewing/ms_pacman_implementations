@@ -101,7 +101,7 @@ public abstract class Utils {
         int pacmanNode = gameState.getPacmanCurrentNodeIndex();
         for(Constants.GHOST ghost : Constants.GHOST.values()) {
             int ghostNode = gameState.getGhostCurrentNodeIndex(ghost);
-            if (gameState.getShortestPathDistance(pacmanNode, ghostNode) < 40) {
+            if (gameState.getShortestPathDistance(pacmanNode, ghostNode) < 20) {
                 return true;
             }
         }
