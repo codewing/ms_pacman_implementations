@@ -48,9 +48,7 @@ public abstract class Utils {
             result.steps++;
             maxSteps--;
 
-            if(analyzeGameState(gameState, result)) break;
-
-        } while(!gameState.isJunction(gameState.getPacmanCurrentNodeIndex()) && maxSteps > 0);
+        } while(!analyzeGameState(gameState, result, maxSteps) && !gameState.isJunction(gameState.getPacmanCurrentNodeIndex()));
 
         result.gameState = gameState;
 
@@ -63,20 +61,38 @@ public abstract class Utils {
      * @param result
      * @return exit the simulation loop?
      */
-    public static boolean analyzeGameState(Game gameState, SimulationResult result) {
-        boolean shouldBreak = false;
+    public static boolean analyzeGameState(Game gameState, SimulationResult result, int remainingSteps) {
+        boolean shouldStop = false;
 
         if(gameState.getNumberOfActivePills() == 0) {
             result.levelComplete = true;
-            shouldBreak = true;
+            shouldStop = true;
         }
 
         if(gameState.wasPacManEaten()) {
             result.diedDuringSimulation = true;
-            shouldBreak = true;
+            shouldStop = true;
         }
 
-        return shouldBreak;
+        if(gameState.wasPowerPillEaten() && hasEdibleGhost(gameState)) {
+            result.powerPillEatenButActive = true;
+            shouldStop = true;
+        }
+
+        if(remainingSteps <= 0) {
+            shouldStop = true;
+        }
+
+        return shouldStop;
+    }
+
+    public static boolean hasEdibleGhost(Game gameState) {
+        for(Constants.GHOST ghost : Constants.GHOST.values()) {
+            if (gameState.isGhostEdible(ghost)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static ArrayList<Constants.MOVE> getPacmanMovesAtJunctionWithoutReverse(Game gameState) {

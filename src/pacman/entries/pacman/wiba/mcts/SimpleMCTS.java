@@ -55,6 +55,8 @@ public class SimpleMCTS {
             lastNS = currentNS;
         }
 
+        if (printLog) System.out.println(rootNode);
+
         Optional<MCTSNode> bestNode = rootNode.children.stream().max(Comparator.comparingInt(n -> n.timesVisited));
         if(bestNode.isPresent()) {
             return bestNode.get().parentAction;
@@ -127,25 +129,24 @@ public class SimpleMCTS {
     }
 
     private float SimulateGame(MCTSNode selectedNode) {
-        if(selectedNode.gameState.getNumberOfActivePills() == 0) return 1.0f;
-
         Game simulationGameState = selectedNode.gameState.copy();
         int totalSteps = params.MAX_PATH_LENGTH - selectedNode.pathLengthInSteps;
         int remainingSteps = totalSteps;
-        SimulationResult lastSimulationResult;
+        SimulationResult lastSimulationResult = new SimulationResult();
 
-        while(remainingSteps > 0) {
+        while(!Utils.analyzeGameState(simulationGameState, lastSimulationResult, remainingSteps)) {
             ArrayList<Constants.MOVE> availableMoves = Utils.getPacmanMovesAtJunctionWithoutReverse(simulationGameState);
             Constants.MOVE pacmanMove = availableMoves.get(random.nextInt(availableMoves.size()));
 
             lastSimulationResult = Utils.simulateToNextJunctionOrLimit(params, simulationGameState, ghostsController, pacmanMove, remainingSteps);
 
             remainingSteps -= lastSimulationResult.steps;
-            if(lastSimulationResult.diedDuringSimulation) {
-                return 0;
-            } else if(lastSimulationResult.levelComplete) {
-                return 1;
-            }
+        }
+
+        if(lastSimulationResult.diedDuringSimulation || lastSimulationResult.powerPillEatenButActive) {
+            return 0;
+        } else if(lastSimulationResult.levelComplete) {
+            return 1;
         }
 
         float collectedPillsReward = 1.0f - ( simulationGameState.getNumberOfActivePills() / ((float)numberOfActivePillsStart));

@@ -113,4 +113,17 @@ public class MCTSNode {
 
         return sb.toString();
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(path() + " distance: " + pathLengthInSteps);
+        sb.append(" - Children ");
+        for(MCTSNode child : children) {
+            sb.append(" || ["+child.parentAction+"] ");
+            sb.append("r/s: "+child.reward+"/"+child.timesVisited);
+        }
+
+        return sb.toString();
+    }
 }
