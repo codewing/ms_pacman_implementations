@@ -76,8 +76,8 @@ public abstract class Utils {
             shouldStop = true;
         }
 
-        if(gameState.wasPowerPillEaten() && hadEdibleGhost) {
-            result.powerPillEatenButActive = true;
+        if(gameState.wasPowerPillEaten() && (hadEdibleGhost || !wasAGhostClose(gameState))) {
+            result.powerPillUnnecessarilyEaten = true;
             shouldStop = true;
         }
 
@@ -91,6 +91,17 @@ public abstract class Utils {
     public static boolean hasEdibleGhost(Game gameState) {
         for(Constants.GHOST ghost : Constants.GHOST.values()) {
             if (gameState.isGhostEdible(ghost)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean wasAGhostClose(Game gameState) {
+        int pacmanNode = gameState.getPacmanCurrentNodeIndex();
+        for(Constants.GHOST ghost : Constants.GHOST.values()) {
+            int ghostNode = gameState.getGhostCurrentNodeIndex(ghost);
+            if (gameState.getShortestPathDistance(pacmanNode, ghostNode) < 40) {
                 return true;
             }
         }

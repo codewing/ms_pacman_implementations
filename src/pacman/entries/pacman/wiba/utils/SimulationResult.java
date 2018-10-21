@@ -8,5 +8,5 @@ public class SimulationResult {
 
     public boolean diedDuringSimulation = false;
     public boolean levelComplete = false;
-    public boolean powerPillEatenButActive = false;
+    public boolean powerPillUnnecessarilyEaten = false;
 }

@@ -34,7 +34,7 @@ public class MCTSNode {
     double getReward() {
         double childrenMax = children.stream().map(MCTSNode::getReward).max(Double::compareTo).orElse(0d);
 
-        return Math.max(childrenMax, reward);
+        return Math.max(childrenMax * 0.5, reward);
     }
 
     double getUCTValue() {
@@ -105,8 +105,8 @@ public class MCTSNode {
     public void updateReward(float deltaReward) {
         if(canUpdate) {
             reward += deltaReward;
-            timesVisited++;
         }
+        timesVisited++;
     }
 
     public void setCanUpdate(boolean canUpdate) {

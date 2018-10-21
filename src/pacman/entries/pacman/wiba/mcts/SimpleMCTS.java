@@ -117,7 +117,7 @@ public class SimpleMCTS {
 
         parentNode.children.add(child);
 
-        if(result.diedDuringSimulation || result.powerPillEatenButActive) {
+        if(result.diedDuringSimulation || result.powerPillUnnecessarilyEaten) {
             // make sure this node doesn't get simulated but simulate the parent
             child.updateReward(-1);
             child.setCanUpdate(false);
@@ -134,7 +134,7 @@ public class SimpleMCTS {
         int remainingSteps = totalSteps;
         SimulationResult lastSimulationResult = new SimulationResult();
 
-        while(!Utils.analyzeGameState(simulationGameState, lastSimulationResult, remainingSteps, lastSimulationResult.powerPillEatenButActive)) {
+        while(!Utils.analyzeGameState(simulationGameState, lastSimulationResult, remainingSteps, lastSimulationResult.powerPillUnnecessarilyEaten)) {
             ArrayList<Constants.MOVE> availableMoves = Utils.getPacmanMovesAtJunctionWithoutReverse(simulationGameState);
             Constants.MOVE pacmanMove = availableMoves.get(random.nextInt(availableMoves.size()));
 
@@ -147,8 +147,13 @@ public class SimpleMCTS {
             return 1;
         }
 
-        if(lastSimulationResult.diedDuringSimulation || lastSimulationResult.powerPillEatenButActive) {
+        if(lastSimulationResult.diedDuringSimulation || lastSimulationResult.powerPillUnnecessarilyEaten) {
             return 0;
+        }
+
+        // no pills eaten - but survived
+        if(simulationGameState.getNumberOfActivePills() == numberOfActivePillsStart) {
+            return 0.1f * (1.f/numberOfActivePillsStart);
         }
 
         return 1.0f - ( simulationGameState.getNumberOfActivePills() / ((float)numberOfActivePillsStart));
