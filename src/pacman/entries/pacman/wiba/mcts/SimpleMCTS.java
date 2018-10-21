@@ -152,9 +152,12 @@ public class SimpleMCTS {
 
     private void Backpropagate(MCTSNode selectedNode, float reward) {
         selectedNode.reward = Math.max(reward, (float)selectedNode.getReward());
+        selectedNode.timesVisited++;
+        selectedNode = selectedNode.parent;
 
         while (selectedNode != null) {
             selectedNode.timesVisited++;
+            selectedNode.reward += reward;
             selectedNode = selectedNode.parent;
         }
     }
