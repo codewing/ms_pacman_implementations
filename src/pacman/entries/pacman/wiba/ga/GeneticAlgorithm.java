@@ -46,7 +46,7 @@ public class GeneticAlgorithm {
     }
 
     public boolean shouldMutate(Genome individual) {
-        if(random.nextInt(100) == 0) {
+        if(random.nextInt(population.size()) == 0) {
             return true;
         }
         return false;
