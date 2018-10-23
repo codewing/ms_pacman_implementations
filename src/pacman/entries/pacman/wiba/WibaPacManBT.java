@@ -43,7 +43,7 @@ public class WibaPacManBT extends Controller<MOVE> implements IControllerActions
 
         // 2 a) build gather sequence
         Sequence gatherSequence = new Sequence("Gather");
-        CheckVariableLeaf canGatherCheck = new CheckVariableLeaf(blackboard, "enemy.distance", (dist) -> Integer.parseInt(dist) > 30);
+        CheckVariableLeaf canGatherCheck = new CheckVariableLeaf(blackboard, "enemy.distance", (dist) -> Integer.parseInt(dist) > 11);
         CollectClosestPillAction collectClosestPillAction = new CollectClosestPillAction(blackboard, this);
 
         gatherSequence.addChild(canGatherCheck);
